@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>모던 미니멀 가계부 v12.2 (구글 동기화 완료형)</title>
+    <title>모던 미니멀 가계부 v12.3 (동기화 긴급 수정본)</title>
     <style>
         :root {
             --bg-color: #f4f6f8;
@@ -378,7 +378,7 @@
 </div>
 
 <script>
-    // ⚠️ [필수 수정] 아래 따옴표 안에 발급받은 본인의 구글 웹앱 배포 주소(URL)를 정확히 붙여넣어 주세요!
+    // 🆕 주소 뒤에 쓰잘데기 없는 매개변수를 붙이지 않고 원본 주소로 직접 깔끔하게 통신합니다.
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx72atqoDYl2JhaE9iLw7-9jZXEiYML8Q4hgg89WREuz-OoxGFYTAyzvrNPirj8FGOJ/exec";
 
     let currentYearMonth = "";
@@ -411,15 +411,15 @@
         document.getElementById('syncStatus').innerText = msg;
     }
 
-    // 구글 스프레드시트 전체 데이터 조회 (GET) - 모바일 규격 캐시 우회 수정완료
+    // 🛠️ 버그 수정 완료된 데이터 호출 함수
     function fetchAllDataFromGoogle() {
-        if(GOOGLE_SCRIPT_URL.includes("YOUR_NEW_WEB_APP") || GOOGLE_SCRIPT_URL.includes("여기에_구글")) {
+        if(GOOGLE_SCRIPT_URL.includes("여기에_구글")) {
             setStatus("❌ 구글 스크립트 URL을 연동해주세요.");
             return;
         }
         setStatus("🔄 구글 시트 동기화 중...");
         
-        // 캐시 왜곡 오류를 우회하기 위해 정식 파라미터 구조 형식으로 호출합니다.
+        // 🆕 주소를 임의로 왜곡시키지 않고, 캐싱은 직전에 수정한 구글 백엔드 헤더가 자체 제어하도록 정식 호출합니다.
         fetch(GOOGLE_SCRIPT_URL)
             .then(res => res.json())
             .then(data => {
@@ -433,9 +433,8 @@
             });
     }
 
-    // 구글 스프레드시트에 저장 (POST)
     function saveCurrentMonthToGoogle() {
-        if(GOOGLE_SCRIPT_URL.includes("YOUR_NEW_WEB_APP") || GOOGLE_SCRIPT_URL.includes("여기에_구글")) return;
+        if(GOOGLE_SCRIPT_URL.includes("여기에_구글")) return;
         setStatus("📤 구글 시트에 실시간 반영 중...");
         
         const payload = {
@@ -798,6 +797,7 @@
         }
     }
 
+    // 쉼표 처리 포맷터 유틸
     function numToCommaStr(num) { if (isNaN(num)) return "0"; return num.toLocaleString(); }
     function commaStrToNum(str) { if (!str) return 0; return parseInt(str.replace(/,/g, '')) || 0; }
     function formatAmountInput(inputEl) {
