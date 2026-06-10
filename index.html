@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>모던 미니멀 가계부 v11.1 (가로폭 초콤팩트 수정형)</title>
+    <title>모던 미니멀 가계부 v12.0 (필터링 및 실적 비교 추가형)</title>
     <style>
         :root {
             --bg-color: #f4f6f8;
@@ -30,7 +30,7 @@
         body {
             background-color: var(--bg-color);
             color: var(--text-main);
-            padding: 20px 8px 60px 8px; /* 모바일 대응 사이드 여백 축소 */
+            padding: 20px 8px 60px 8px;
             display: flex;
             justify-content: center;
         }
@@ -38,7 +38,7 @@
         .container {
             width: 100%;
             max-width: 540px;
-            min-width: 0; /* 자식 요소 삐져나옴 방지 */
+            min-width: 0;
         }
 
         header {
@@ -124,7 +124,7 @@
             background: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 0 0 14px 14px;
-            padding: 16px; /* 내부 패딩 소폭 축소 */
+            padding: 16px;
             margin-bottom: 16px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.01);
             min-width: 0;
@@ -133,6 +133,11 @@
 
         .tab-content .card:not(:first-child) { border-radius: 14px; }
         .card-title { font-size: 15px; font-weight: 700; color: var(--point-gray); margin-bottom: 16px; }
+        
+        /* 지출내역 헤더 정렬용 */
+        .history-title-area { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px; }
+        .history-title-area .card-title { margin-bottom: 0; }
+        .filter-select { padding: 4px 8px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 12px; font-weight: 600; color: var(--text-main); outline: none; background: #fff; }
 
         .income-budget-grid {
             display: grid;
@@ -163,15 +168,12 @@
         .progress-bar { background: var(--point-blue); height: 100%; width: 0%; transition: width 0.3s ease; }
         .progress-bar.warning { background: var(--danger-color); }
 
-        /* 예산 박스 2열 그리드 구조 극대화 */
         .budget-box-container { display: flex; flex-direction: column; gap: 14px; margin-bottom: 16px; min-width: 0; }
         .sub-budget-card { background: #f8fafc; border: 1px solid var(--border-color); border-radius: 10px; padding: 10px 8px; min-width: 0; }
         .sub-budget-title { font-size: 13px; font-weight: 700; color: var(--point-khaki); margin-bottom: 8px; border-left: 3px solid var(--point-khaki); padding-left: 6px; }
         
-        /* 2열 고정 구조 및 삐져나옴 철저 방지 */
         .budget-inputs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; min-width: 0; }
         
-        /* 항목 카드 블록 */
         .budget-input-item { 
             display: flex; 
             flex-direction: column; 
@@ -179,18 +181,20 @@
             border: 1px solid #edf2f7; 
             border-radius: 8px; 
             padding: 6px;
-            min-width: 0; /* grid 하위 요소 삐져나옴 버그 해결 */
+            min-width: 0;
             overflow: hidden;
         }
-        .budget-item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; min-width: 0; }
+        .budget-item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; min-width: 0; gap: 4px; }
         .budget-item-header span { font-size: 11px; color: var(--text-main); font-weight: 700; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; }
-        .budget-item-header .subtotal-span { font-size: 11px; color: var(--point-blue); font-weight: 800; flex-shrink: 0; }
         
-        /* 항목 내의 4줄 초소형 라인 구조 (완전 타이트하게 재배정) */
+        /* 예산 / 실적 비교용 스타일 */
+        .budget-item-header .subtotal-span { font-size: 10.5px; color: var(--text-muted); font-weight: 600; flex-shrink: 0; text-align: right; }
+        .budget-item-header .subtotal-span .b-val { color: var(--point-blue); font-weight: 700; }
+        .budget-item-header .subtotal-span .e-val { color: var(--point-khaki); font-weight: 700; }
+
         .budget-rows-container { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
         .budget-row-line { display: flex; gap: 3px; align-items: center; min-width: 0; width: 100%; }
         
-        /* 메모칸 비율 확대, 금액칸 축소하여 글씨 짤림과 밀림 방지 */
         .budget-row-line input.row-memo { flex: 1.4; padding: 2px 4px; font-size: 10px; border: 1px solid #e2e8f0; border-radius: 4px; outline: none; font-weight: 600; background: #fff; color: var(--text-main); min-width: 0; text-overflow: ellipsis; }
         .budget-row-line input.row-amount { flex: 1; padding: 2px 4px; font-size: 10px; border: 1px solid #e2e8f0; border-radius: 4px; text-align: right; outline: none; font-weight: 700; background: #fff; color: var(--text-main); min-width: 0; }
         .budget-row-line input[readonly] { background-color: #f1f5f9; color: var(--text-muted); cursor: not-allowed; font-size: 9.5px; letter-spacing: -0.5px; }
@@ -269,6 +273,10 @@
                     <span class="lbl" style="color: var(--text-muted);">소득 대비 예산 비중</span>
                     <span class="val" id="budgetRatio">0%</span>
                 </div>
+                <div class="status-row" style="border-bottom: 1px dashed #e2e8f0; padding-bottom: 6px; margin-bottom: 6px;">
+                    <span class="lbl" style="color: var(--point-gray); font-weight:600;">예산 편성 후 소득 잔액</span>
+                    <span class="val" id="displayIncomeMinusBudget" style="color: #2563eb;">0원</span>
+                </div>
                 <div class="status-row">
                     <span class="lbl">당월 총 예산</span>
                     <span class="val" id="displayBudget">0원</span>
@@ -330,7 +338,12 @@
         </div>
 
         <div class="card">
-            <div class="card-title" id="historyTitle">지출 내역</div>
+            <div class="history-title-area">
+                <div class="card-title" id="historyTitle">지출 내역</div>
+                <select id="historyFilterSelect" class="filter-select" onchange="renderList()">
+                    <option value="ALL">🔍 전체보기</option>
+                </select>
+            </div>
             <ul id="historyList" class="history-list"></ul>
         </div>
     </div>
@@ -469,11 +482,17 @@
     function setupCategorySelects() {
         const selectAccount = document.getElementById('categorySelect');
         const selectSalary = document.getElementById('splitCategory');
+        const filterSelect = document.getElementById('historyFilterSelect');
+        
         selectAccount.innerHTML = ''; selectSalary.innerHTML = '';
+        filterSelect.innerHTML = '<option value="ALL">🔍 전체보기</option>';
+        
         Object.keys(categoryEmojis).forEach(cat => {
             const optText = `${categoryEmojis[cat]} ${cat}`;
+            
             const opt1 = document.createElement('option'); opt1.value = cat; opt1.innerText = optText; selectAccount.appendChild(opt1);
             const opt2 = document.createElement('option'); opt2.value = cat; opt2.innerText = optText; selectSalary.appendChild(opt2);
+            const opt3 = document.createElement('option'); opt3.value = cat; opt3.innerText = optText; filterSelect.appendChild(opt3);
         });
     }
 
@@ -508,10 +527,13 @@
             }
         }
 
+        // 소계 영역을 예산 / 실적이 동시에 표기되도록 구조 확장
         block.innerHTML = `
             <div class="budget-item-header">
                 <span>${categoryEmojis[cat]} ${cat}</span>
-                <span class="subtotal-span"><span id="subtotal_${key}">0</span>원</span>
+                <span class="subtotal-span">
+                    <span id="subtotal_${key}" class="b-val">0</span> / <span id="actual_${key}" class="e-val">0</span>
+                </span>
             </div>
             <div class="budget-rows-container">
                 ${rowsHTML}
@@ -523,7 +545,6 @@
     function loadMonthData() {
         const [year, month] = currentYearMonth.split('-');
         document.getElementById('currentMonthDisplay').innerText = `${year}년 ${month}월`;
-        document.getElementById('historyTitle').innerText = `${month}월 지출 내역`;
 
         if (!accountData[currentYearMonth]) {
             accountData[currentYearMonth] = { income: 0, budgets: { ...defaultBudgets }, detailBudgets: {}, expenses: [], splits: [] };
@@ -536,6 +557,7 @@
         if (!mData.splits) mData.splits = [];
 
         document.getElementById('incomeInput').value = mData.income > 0 ? numToCommaStr(mData.income) : '';
+        document.getElementById('historyFilterSelect').value = "ALL"; // 필터 초기화
         
         cancelAccountEdit();
         cancelSalaryEdit();
@@ -550,11 +572,20 @@
         
         const splits = mData.splits || [];
         const details = mData.detailBudgets || {};
+        const expenses = mData.expenses || [];
 
+        // 1. 이체 분할 자동반영 계산
         let splitSums = { sub:0, house:0, phone:0, ins:0, car:0, save:0, traffic:0, card:0, food:0, shop:0, item:0, etc:0 };
         splits.forEach(item => {
             const key = keyMapping[item.category];
             if (key) splitSums[key] += item.amount;
+        });
+
+        // 2. 실시간 카테고리별 실적(지출 합계) 연산
+        let actualExpenseSums = { sub:0, house:0, phone:0, ins:0, car:0, save:0, traffic:0, card:0, food:0, shop:0, item:0, etc:0 };
+        expenses.forEach(item => {
+            const key = keyMapping[item.category];
+            if (key) actualExpenseSums[key] += item.amount;
         });
 
         Object.keys(keyMapping).forEach(catName => {
@@ -584,8 +615,14 @@
             }
 
             const totalSubtotal = splitSums[key] + manualSum;
+            
+            // 예산 값 업데이트
             const subtotalEl = document.getElementById(`subtotal_${key}`);
             if(subtotalEl) subtotalEl.innerText = numToCommaStr(totalSubtotal);
+            
+            // 🆕 실적(지출) 값 동시 매칭
+            const actualEl = document.getElementById(`actual_${key}`);
+            if(actualEl) actualEl.innerText = numToCommaStr(actualExpenseSums[key]);
             
             mData.budgets[key] = totalSubtotal;
         });
@@ -641,9 +678,23 @@
         Object.keys(keyMapping).forEach(catName => { budget += (mData.budgets[keyMapping[catName]] || 0); });
         const totalExpense = mData.expenses ? mData.expenses.reduce((sum, item) => sum + item.amount, 0) : 0;
 
+        // 대시보드 표시값 변경
         document.getElementById('budgetRatio').innerText = `${income > 0 ? Math.round((budget / income) * 100) : 0}%`;
+        
+        // 🆕 [소득 - 예산 잔액] 연산 및 노출 로직 추가
+        const incomeMinusBudget = income - budget;
+        const incomeMinusBudgetEl = document.getElementById('displayIncomeMinusBudget');
+        if(incomeMinusBudget >= 0) {
+            incomeMinusBudgetEl.innerText = numToCommaStr(incomeMinusBudget) + '원';
+            incomeMinusBudgetEl.style.color = "#2563eb";
+        } else {
+            incomeMinusBudgetEl.innerText = '예산 초과 ' + numToCommaStr(Math.abs(incomeMinusBudget)) + '원';
+            incomeMinusBudgetEl.style.color = "var(--danger-color)";
+        }
+
         document.getElementById('displayBudget').innerText = numToCommaStr(budget) + '원';
         document.getElementById('displayExpense').innerText = numToCommaStr(totalExpense) + '원';
+        
         const remain = budget - totalExpense;
         const progressPercent = budget > 0 ? (totalExpense / budget) * 100 : 0;
         const progressBar = document.getElementById('budgetProgress');
@@ -651,6 +702,7 @@
         
         if (progressPercent > 100) progressBar.classList.add('warning');
         else progressBar.classList.remove('warning');
+        
         const remainLabel = document.getElementById('remainLabel');
         const displayRemain = document.getElementById('displayRemain');
 
@@ -684,6 +736,7 @@
         }
 
         renderList();
+        renderBudgetFields(); // 지출 추가 시 실적 비교란 새로고침
         updateDashboard();
         saveCurrentMonthToGoogle();
         document.getElementById('memoInput').value = ""; amountEl.value = "";
@@ -694,6 +747,7 @@
         accountData[currentYearMonth].expenses = accountData[currentYearMonth].expenses.filter(e => e.id !== id);
         if (editingAccountId === id) cancelAccountEdit();
         renderList();
+        renderBudgetFields(); // 지출 삭제 시 실적 비교란 새로고침
         updateDashboard();
         saveCurrentMonthToGoogle();
     }
@@ -757,6 +811,7 @@
         if (addedCount > 0) {
             alert(`${addedCount}개의 예산 항목이 지출 내역에 등록되었습니다.`);
             renderList(); 
+            renderBudgetFields();
             updateDashboard(); 
             saveCurrentMonthToGoogle();
         } else {
@@ -764,11 +819,28 @@
         }
     }
 
+    // 🆕 카테고리 필터 기능이 결합된 내역 렌더링 함수
     function renderList() {
         const listEl = document.getElementById('historyList');
+        const filterValue = document.getElementById('historyFilterSelect').value;
+        const [year, month] = currentYearMonth.split('-');
+        
         listEl.innerHTML = "";
-        const list = accountData[currentYearMonth].expenses || [];
-        if (list.length === 0) { listEl.innerHTML = `<li class="empty-msg">이번 달 지출 내역이 없습니다.</li>`; return; }
+        let list = accountData[currentYearMonth].expenses || [];
+        
+        // 필터링 적용
+        if (filterValue !== "ALL") {
+            list = list.filter(item => item.category === filterValue);
+        }
+
+        // 지출 타이틀 옆에 현재 필터 조건의 합계 금액 노출
+        const filterTotal = list.reduce((sum, item) => sum + item.amount, 0);
+        document.getElementById('historyTitle').innerText = `${month}월 지출 (${numToCommaStr(filterTotal)}원)`;
+
+        if (list.length === 0) { 
+            listEl.innerHTML = `<li class="empty-msg">선택한 조건의 지출 내역이 없습니다.</li>`; 
+            return; 
+        }
 
         [...list].sort((a, b) => new Date(b.date) - new Date(a.date) || b.id - a.id).forEach(item => {
             const li = document.createElement('li'); li.className = "history-item";
