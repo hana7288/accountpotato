@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>모던 미니멀 가계부 v12.3 (동기화 긴급 수정본)</title>
+    <title>모던 미니멀 가계부 v12.0 (완벽 복구 및 동기화 수정본)</title>
     <style>
         :root {
             --bg-color: #f4f6f8;
@@ -163,15 +163,21 @@
         .budget-box-container { display: flex; flex-direction: column; gap: 14px; margin-bottom: 16px; }
         .sub-budget-card { background: #f8fafc; border: 1px solid var(--border-color); border-radius: 10px; padding: 14px; }
         .sub-budget-title { font-size: 13px; font-weight: 700; color: var(--point-khaki); margin-bottom: 10px; border-left: 3px solid var(--point-khaki); padding-left: 6px; }
-        .budget-inputs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .budget-input-item { display: flex; align-items: center; font-size: 12px; }
-        .budget-input-item span { width: 85px; color: var(--text-main); font-weight: 600; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; }
-        .budget-input-item input {
-            width: calc(100% - 85px);
-            padding: 8px; border: 1px solid var(--border-color); border-radius: 6px;
-            font-size: 13px; font-weight: 600; text-align: right; outline: none; background: #fff;
+        
+        /* v12.0 세로형 예산/실적 실시간 디스플레이 스타일 */
+        .budget-inputs-grid { display: flex; flex-direction: column; gap: 12px; }
+        .budget-input-item { display: flex; flex-direction: column; gap: 4px; background: #fff; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); }
+        .budget-item-header { display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 700; }
+        .budget-item-progress-row { display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+        .budget-item-progress-row .actual-val { font-weight: 700; color: var(--point-khaki); }
+        .budget-input-wrapper { display: flex; align-items: center; gap: 4px; margin-top: 4px; }
+        .budget-input-wrapper input {
+            width: 100%; padding: 6px 8px; border: 1px solid var(--border-color); border-radius: 6px;
+            font-size: 13px; font-weight: 600; text-align: right; outline: none;
         }
-        .budget-input-item input[readonly] { background-color: #f1f5f9; color: var(--text-muted); cursor: not-allowed; }
+        .budget-mini-bar-bg { background: #e2e8f0; height: 4px; border-radius: 2px; width: 100%; margin-top: 4px; overflow: hidden; }
+        .budget-mini-bar { background: var(--point-khaki); height: 100%; width: 0%; transition: width 0.2s ease; }
+        .budget-mini-bar.warning { background: var(--danger-color); }
 
         .btn-action { width: 100%; padding: 12px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; text-align: center; }
         .btn-khaki { background-color: var(--point-khaki); color: white; }
@@ -183,6 +189,13 @@
         .form-control { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 12px; font-weight: 600; color: var(--text-main); outline: none; background-color: #fff; }
         .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .form-row-4 { display: grid; grid-template-columns: 1fr 1.1fr 1fr 1fr; gap: 6px; }
+
+        /* v12.0 카테고리 필터 탭 스타일 */
+        .filter-wrapper { margin-bottom: 12px; }
+        .filter-scroller { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }
+        .filter-scroller::-webkit-scrollbar { display: none; }
+        .filter-chip { flex-shrink: 0; padding: 6px 12px; border-radius: 20px; background: #e2e8f0; color: var(--text-muted); font-size: 12px; font-weight: 700; border: none; cursor: pointer; }
+        .filter-chip.active { background: var(--point-blue); color: white; }
 
         .history-list { list-style: none; }
         .history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f5f9; }
@@ -266,29 +279,15 @@
         </div>
 
         <div class="card">
-            <div class="card-title">항목별 예산 계획</div>
+            <div class="card-title">항목별 예산 계획 및 실적</div>
             <div class="budget-box-container">
                 <div class="sub-budget-card">
                     <div class="sub-budget-title">[고정비]</div>
-                    <div class="budget-inputs-grid">
-                        <div class="budget-input-item"><span>🍿 정기구독</span><input type="text" id="b_sub" placeholder="0" onchange="handleBudgetChange()"></div>
-                        <div class="budget-input-item"><span>🏠 집</span><input type="text" id="b_house" placeholder="0" onchange="handleBudgetChange()"></div>
-                        <div class="budget-input-item"><span>📱 통신비</span><input type="text" id="b_phone" placeholder="0" onchange="handleBudgetChange()"></div>
-                        <div class="budget-input-item"><span>🏥 보험료</span><input type="text" id="b_ins" placeholder="0" onchange="handleBudgetChange()"></div>
-                        <div class="budget-input-item"><span>🚗 자동차</span><input type="text" id="b_car" placeholder="0" onchange="handleBudgetChange()"></div>
-                        <div class="budget-input-item"><span>🐷 적금</span><input type="text" id="b_save" placeholder="0" onchange="handleBudgetChange()"></div>
-                    </div>
+                    <div class="budget-inputs-grid" id="fixedBudgetGrid"></div>
                 </div>
                 <div class="sub-budget-card">
                     <div class="sub-budget-title">[변동비]</div>
-                    <div class="budget-inputs-grid">
-                        <div class="budget-input-item"><span>🚌 교통비</span><input type="text" id="b_traffic" placeholder="0" onchange="handleBudgetChange()"></div>
-                        <div class="budget-input-item"><span>💳 카드</span><input type="text" id="b_card" placeholder="0" onchange="handleBudgetChange()"></div>
-                        <div class="budget-input-item"><span>🍔 식비</span><input type="text" id="b_food" placeholder="0" onchange="handleBudgetChange()"></div>
-                        <div class="budget-input-item"><span>🛍️ 쇼핑</span><input type="text" id="b_shop" placeholder="0" onchange="handleBudgetChange()"></div>
-                        <div class="budget-input-item"><span>🧻 생필품</span><input type="text" id="b_item" placeholder="0" onchange="handleBudgetChange()"></div>
-                        <div class="budget-input-item"><span>📦 기타</span><input type="text" id="b_etc" placeholder="0" onchange="handleBudgetChange()"></div>
-                    </div>
+                    <div class="budget-inputs-grid" id="variableBudgetGrid"></div>
                 </div>
             </div>
             <button class="btn-action btn-khaki" onclick="insertAllBudgetedCosts()">당월 예산 일괄 등록</button>
@@ -323,6 +322,9 @@
 
         <div class="card">
             <div class="card-title" id="historyTitle">지출 내역</div>
+            <div class="filter-wrapper">
+                <div class="filter-scroller" id="categoryFilterScroller"></div>
+            </div>
             <ul id="historyList" class="history-list"></ul>
         </div>
     </div>
@@ -378,18 +380,25 @@
 </div>
 
 <script>
-    // 🆕 주소 뒤에 쓰잘데기 없는 매개변수를 붙이지 않고 원본 주소로 직접 깔끔하게 통신합니다.
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx72atqoDYl2JhaE9iLw7-9jZXEiYML8Q4hgg89WREuz-OoxGFYTAyzvrNPirj8FGOJ/exec";
+    // 🛠️ PC-모바일 정식 연동용 배포 주소 세팅란
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzkTwyLgo9ydBjOB8293OSaaSNF96AwNOMEfGCuKBQtjdKNxGWCyCnQ9uq0BZfY5eRf/exec";
 
     let currentYearMonth = "";
     let accountData = {};
     let editingAccountId = null;
     let editingSalaryId = null;
+    let selectedFilterCategory = "전체"; // 필터링 카테고리 상태값
+
+    const categoryGroups = {
+        fixed: ["정기구독", "집", "통신비", "보험료", "자동차", "적금"],
+        variable: ["교통비", "카드", "식비", "쇼핑", "생필품", "기타"]
+    };
 
     const categoryEmojis = {
         "정기구독": "🍿", "집": "🏠", "통신비": "📱", "보험료": "🏥", "자동차": "🚗", "적금": "🐷",
         "교통비": "🚌", "카드": "💳", "식비": "🍔", "쇼핑": "🛍️", "생필품": "🧻", "기타": "📦"
     };
+
     const keyMapping = {
         "정기구독": "sub", "집": "house", "통신비": "phone", "보험료": "ins", "자동차": "car", "적금": "save",
         "교통비": "traffic", "카드": "card", "식비": "food", "쇼핑": "shop", "생필품": "item", "기타": "etc"
@@ -404,6 +413,8 @@
     function initPage() {
         document.getElementById('expenseDate').value = new Date().toISOString().substring(0, 10);
         setupCategorySelects();
+        renderFilterChips(); 
+        buildBudgetGridDOM(); 
         fetchAllDataFromGoogle();
     }
 
@@ -411,15 +422,14 @@
         document.getElementById('syncStatus').innerText = msg;
     }
 
-    // 🛠️ 버그 수정 완료된 데이터 호출 함수
+    // 구글 데이터 실시간 조회 (주소 가공 로직 배제하여 안정적인 크로스 디바이스 연동)
     function fetchAllDataFromGoogle() {
-        if(GOOGLE_SCRIPT_URL.includes("여기에_구글")) {
+        if(GOOGLE_SCRIPT_URL.includes("여기에_새로운") || GOOGLE_SCRIPT_URL.includes("여기에_구글")) {
             setStatus("❌ 구글 스크립트 URL을 연동해주세요.");
             return;
         }
         setStatus("🔄 구글 시트 동기화 중...");
         
-        // 🆕 주소를 임의로 왜곡시키지 않고, 캐싱은 직전에 수정한 구글 백엔드 헤더가 자체 제어하도록 정식 호출합니다.
         fetch(GOOGLE_SCRIPT_URL)
             .then(res => res.json())
             .then(data => {
@@ -433,8 +443,9 @@
             });
     }
 
+    // 구글 데이터 실시간 업로드
     function saveCurrentMonthToGoogle() {
-        if(GOOGLE_SCRIPT_URL.includes("여기에_구글")) return;
+        if(GOOGLE_SCRIPT_URL.includes("여기에_새로운") || GOOGLE_SCRIPT_URL.includes("여기에_구글")) return;
         setStatus("📤 구글 시트에 실시간 반영 중...");
         
         const payload = {
@@ -467,6 +478,60 @@
         });
     }
 
+    // 🔄 복구 완료: 카테고리 필터 칩 생성 함수
+    function renderFilterChips() {
+        const scroller = document.getElementById('categoryFilterScroller');
+        scroller.innerHTML = "";
+        
+        const allBtn = document.createElement('button');
+        allBtn.className = `filter-chip ${selectedFilterCategory === "전체" ? "active" : ""}`;
+        allBtn.innerText = "전체";
+        allBtn.onclick = () => { selectedFilterCategory = "전체"; renderFilterChips(); renderList(); };
+        scroller.appendChild(allBtn);
+
+        Object.keys(categoryEmojis).forEach(cat => {
+            const btn = document.createElement('button');
+            btn.className = `filter-chip ${selectedFilterCategory === cat ? "active" : ""}`;
+            btn.innerText = `${categoryEmojis[cat]} ${cat}`;
+            btn.onclick = () => { selectedFilterCategory = cat; renderFilterChips(); renderList(); };
+            scroller.appendChild(btn);
+        });
+    }
+
+    // 🔄 복구 완료: 예산 실적 실시간 반응형 그리드 생성
+    function buildBudgetGridDOM() {
+        const fixedGrid = document.getElementById('fixedBudgetGrid');
+        const varGrid = document.getElementById('variableBudgetGrid');
+        fixedGrid.innerHTML = ""; varGrid.innerHTML = "";
+
+        createGridItems(categoryGroups.fixed, fixedGrid);
+        createGridItems(categoryGroups.variable, varGrid);
+    }
+
+    function createGridItems(categories, targetGrid) {
+        categories.forEach(cat => {
+            const key = keyMapping[cat];
+            const item = document.createElement('div');
+            item.className = "budget-input-item";
+            item.innerHTML = `
+                <div class="budget-item-header">
+                    <span>${categoryEmojis[cat]} ${cat}</span>
+                    <span id="actual_text_${key}" class="actual-val">실적: 0원</span>
+                </div>
+                <div class="budget-input-wrapper">
+                    <input type="text" id="b_${key}" placeholder="0" onchange="handleBudgetChange()">
+                </div>
+                <div class="budget-item-progress-row">
+                    <span id="pct_text_${key}">0% 집행</span>
+                </div>
+                <div class="budget-mini-bar-bg">
+                    <div id="bar_${key}" class="budget-mini-bar"></div>
+                </div>
+            `;
+            targetGrid.appendChild(item);
+        });
+    }
+
     function loadMonthData() {
         const [year, month] = currentYearMonth.split('-');
         document.getElementById('currentMonthDisplay').innerText = `${year}년 ${month}월`;
@@ -490,20 +555,46 @@
         renderSplitList();
     }
 
+    // 🔄 복구 완료: 예산 및 실적 통합 연산 및 진행바 연동 
     function renderBudgetFields() {
         const mData = accountData[currentYearMonth];
         const b = mData.budgets;
-        const splits = mData.splits;
+        const expenses = mData.expenses || [];
+        const splits = mData.splits || [];
 
         let splitSums = { sub:0, house:0, phone:0, ins:0, car:0, save:0, traffic:0, card:0, food:0, shop:0, item:0, etc:0 };
         splits.forEach(item => {
             const key = keyMapping[item.category];
             if (key) splitSums[key] += item.amount;
         });
+
+        let expenseSums = { sub:0, house:0, phone:0, ins:0, car:0, save:0, traffic:0, card:0, food:0, shop:0, item:0, etc:0 };
+        expenses.forEach(item => {
+            const key = keyMapping[item.category];
+            if (key) expenseSums[key] += item.amount;
+        });
+
         Object.keys(keyMapping).forEach(catName => {
             const key = keyMapping[catName];
-            const el = document.getElementById(`b_${key}`);
-            el.value = numToCommaStr((b[key] || 0) + splitSums[key]);
+            const budgetInput = document.getElementById(`b_${key}`);
+            const actualText = document.getElementById(`actual_text_${key}`);
+            const pctText = document.getElementById(`pct_text_${key}`);
+            const miniBar = document.getElementById(`bar_${key}`);
+
+            const totalBudget = (b[key] || 0) + splitSums[key];
+            const totalActual = expenseSums[key] || 0;
+
+            if(budgetInput) budgetInput.value = numToCommaStr(totalBudget);
+            if(actualText) actualText.innerText = `실적: ${numToCommaStr(totalActual)}원`;
+
+            let pct = totalBudget > 0 ? Math.round((totalActual / totalBudget) * 100) : 0;
+            if(pctText) pctText.innerText = `${pct}% 집행 (예산: ${numToCommaStr(totalBudget)}원)`;
+            
+            if(miniBar) {
+                miniBar.style.width = Math.min(pct, 100) + '%';
+                if(pct > 100) miniBar.classList.add('warning');
+                else miniBar.classList.remove('warning');
+            }
         });
         calculateTotalBudgetSum();
     }
@@ -520,11 +611,13 @@
         Object.keys(keyMapping).forEach(catName => {
             const key = keyMapping[catName];
             const el = document.getElementById(`b_${key}`);
-            formatAmountInput(el);
-            let pureManualVal = commaStrToNum(el.value) - splitSums[key];
-            mData.budgets[key] = pureManualVal < 0 ? 0 : pureManualVal;
+            if(el) {
+                formatAmountInput(el);
+                let pureManualVal = commaStrToNum(el.value) - splitSums[key];
+                mData.budgets[key] = pureManualVal < 0 ? 0 : pureManualVal;
+            }
         });
-        calculateTotalBudgetSum();
+        renderBudgetFields();
         saveCurrentMonthToGoogle();
     }
 
@@ -588,8 +681,7 @@
             mData.expenses.push({ id: Date.now(), date: dateInput, category, memo: memo || `${category} 지출`, amount });
         }
 
-        renderList();
-        updateDashboard();
+        renderBudgetFields();
         saveCurrentMonthToGoogle();
         document.getElementById('memoInput').value = ""; amountEl.value = "";
     }
@@ -598,8 +690,7 @@
         if (!confirm("이 지출 내역을 삭제하시겠습니까?")) return;
         accountData[currentYearMonth].expenses = accountData[currentYearMonth].expenses.filter(e => e.id !== id);
         if (editingAccountId === id) cancelAccountEdit();
-        renderList();
-        updateDashboard();
+        renderBudgetFields();
         saveCurrentMonthToGoogle();
     }
 
@@ -657,17 +748,24 @@
         });
         if (addedCount > 0) {
             alert(`${addedCount}개의 예산 항목이 지출 내역에 등록되었습니다.`);
-            renderList(); updateDashboard(); saveCurrentMonthToGoogle();
+            renderBudgetFields(); saveCurrentMonthToGoogle();
         } else {
             alert("이미 모두 등록되었거나 등록할 예산 금액이 없습니다.");
         }
     }
 
+    // 🔄 복구 완료: 카테고리 필터링이 실시간 적용되는 목록 렌더링 함수
     function renderList() {
         const listEl = document.getElementById('historyList');
         listEl.innerHTML = "";
-        const list = accountData[currentYearMonth].expenses || [];
-        if (list.length === 0) { listEl.innerHTML = `<li class="empty-msg">이번 달 지출 내역이 없습니다.</li>`; return; }
+        let list = accountData[currentYearMonth].expenses || [];
+        
+        // 필터링 메커니즘 가동
+        if (selectedFilterCategory !== "전체") {
+            list = list.filter(item => item.category === selectedFilterCategory);
+        }
+
+        if (list.length === 0) { listEl.innerHTML = `<li class="empty-msg">해당 내역이 없습니다.</li>`; return; }
 
         [...list].sort((a, b) => new Date(b.date) - new Date(a.date) || b.id - a.id).forEach(item => {
             const li = document.createElement('li'); li.className = "history-item";
@@ -797,7 +895,6 @@
         }
     }
 
-    // 쉼표 처리 포맷터 유틸
     function numToCommaStr(num) { if (isNaN(num)) return "0"; return num.toLocaleString(); }
     function commaStrToNum(str) { if (!str) return 0; return parseInt(str.replace(/,/g, '')) || 0; }
     function formatAmountInput(inputEl) {
