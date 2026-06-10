@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>모던 미니멀 가계부 v8.2</title>
+    <title>모던 미니멀 가계부 v9.0 (구글 동기화)</title>
     <style>
         :root {
             --bg-color: #f4f6f8;
@@ -11,12 +11,12 @@
             --text-main: #212529;
             --text-muted: #6c757d;
             --border-color: #e2e8f0;
-            --point-blue: #1e3a8a; /* 딥블루 */
-            --point-khaki: #4a5d5e; /* 톤다운 카키 */
+            --point-blue: #1e3a8a;
+            --point-khaki: #4a5d5e;
             --point-gray: #334155; 
             --danger-color: #ef4444;
             --success-color: #10b981;
-            --edit-color: #f59e0b; /* 수정 모드 오렌지 */
+            --edit-color: #f59e0b;
         }
 
         * {
@@ -43,6 +43,7 @@
         header {
             margin-bottom: 16px;
             text-align: center;
+            position: relative;
         }
 
         header h1 {
@@ -52,7 +53,14 @@
             letter-spacing: -0.5px;
         }
 
-        /* 월 선택 상단바 */
+        /* 로딩바 및 동기화 상태 표시 */
+        #syncStatus {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 4px;
+            font-weight: 600;
+        }
+
         .month-selector {
             display: flex;
             justify-content: space-between;
@@ -81,7 +89,6 @@
             color: var(--point-gray);
         }
 
-        /* 엑셀 스타일 탭 메뉴 */
         .excel-tabs {
             display: flex;
             background: #e2e8f0;
@@ -110,17 +117,9 @@
             box-shadow: 0 -2px 5px rgba(0,0,0,0.04);
         }
 
-        /* 탭 콘텐츠 영역 */
-        .tab-content {
-            display: none;
-            background: transparent;
-        }
+        .tab-content { display: none; background: transparent; }
+        .tab-content.active { display: block; }
 
-        .tab-content.active {
-            display: block;
-        }
-
-        /* 카드 스타일 */
         .card {
             background: var(--card-bg);
             border: 1px solid var(--border-color);
@@ -130,18 +129,9 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.01);
         }
 
-        .tab-content .card:not(:first-child) {
-            border-radius: 14px;
-        }
+        .tab-content .card:not(:first-child) { border-radius: 14px; }
+        .card-title { font-size: 15px; font-weight: 700; color: var(--point-gray); margin-bottom: 16px; }
 
-        .card-title {
-            font-size: 15px;
-            font-weight: 700;
-            color: var(--point-gray);
-            margin-bottom: 16px;
-        }
-
-        /* 소득/예산 입력 칸 */
         .income-budget-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -149,18 +139,8 @@
             margin-bottom: 16px;
         }
 
-        .input-box {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .input-box label {
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-bottom: 6px;
-            font-weight: 600;
-        }
-
+        .input-box { display: flex; flex-direction: column; }
+        .input-box label { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; font-weight: 600; }
         .input-box input {
             border: 1px solid var(--border-color);
             border-radius: 8px;
@@ -170,237 +150,63 @@
             outline: none;
             width: 100%;
         }
-
         .input-box input:focus { border-color: var(--point-blue); }
 
-        /* 대시보드 요약창 */
-        .status-summary {
-            background: #f8fafc;
-            border-radius: 10px;
-            padding: 14px;
-        }
-
-        .status-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            font-size: 13px;
-        }
+        .status-summary { background: #f8fafc; border-radius: 10px; padding: 14px; }
+        .status-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
         .status-row:last-child { margin-bottom: 0; }
         .status-row .val { font-weight: 700; }
 
-        .progress-bar-container {
-            background: #e2e8f0;
-            border-radius: 6px;
-            height: 8px;
-            width: 100%;
-            margin: 10px 0;
-            overflow: hidden;
-        }
-
-        .progress-bar {
-            background: var(--point-blue);
-            height: 100%;
-            width: 0%;
-            transition: width 0.3s ease;
-        }
+        .progress-bar-container { background: #e2e8f0; border-radius: 6px; height: 8px; width: 100%; margin: 10px 0; overflow: hidden; }
+        .progress-bar { background: var(--point-blue); height: 100%; width: 0%; transition: width 0.3s ease; }
         .progress-bar.warning { background: var(--danger-color); }
 
-        /* 예산 설정 박스 */
-        .budget-box-container {
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-            margin-bottom: 16px;
-        }
-
-        .sub-budget-card {
-            background: #f8fafc;
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            padding: 14px;
-        }
-
-        .sub-budget-title {
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--point-khaki);
-            margin-bottom: 10px;
-            border-left: 3px solid var(--point-khaki);
-            padding-left: 6px;
-        }
-
-        .budget-inputs-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-
-        .budget-input-item {
-            display: flex;
-            align-items: center;
-            font-size: 12px;
-        }
-
-        .budget-input-item span {
-            width: 85px;
-            color: var(--text-main);
-            font-weight: 600;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            overflow: hidden;
-        }
-
+        .budget-box-container { display: flex; flex-direction: column; gap: 14px; margin-bottom: 16px; }
+        .sub-budget-card { background: #f8fafc; border: 1px solid var(--border-color); border-radius: 10px; padding: 14px; }
+        .sub-budget-title { font-size: 13px; font-weight: 700; color: var(--point-khaki); margin-bottom: 10px; border-left: 3px solid var(--point-khaki); padding-left: 6px; }
+        .budget-inputs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .budget-input-item { display: flex; align-items: center; font-size: 12px; }
+        .budget-input-item span { width: 85px; color: var(--text-main); font-weight: 600; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; }
         .budget-input-item input {
-            width: calc(100% - 85px);
-            padding: 8px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: 600;
-            text-align: right;
-            outline: none;
-            background: #fff;
+            width: calc(100% - 85px); padding: 8px; border: 1px solid var(--border-color); border-radius: 6px;
+            font-size: 13px; font-weight: 600; text-align: right; outline: none; background: #fff;
         }
-
-        .budget-input-item input:focus { border-color: var(--point-khaki); }
         .budget-input-item input[readonly] { background-color: #f1f5f9; color: var(--text-muted); cursor: not-allowed; }
 
-        .btn-action {
-            width: 100%;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            text-align: center;
-        }
+        .btn-action { width: 100%; padding: 12px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; text-align: center; }
         .btn-khaki { background-color: var(--point-khaki); color: white; }
-        .btn-khaki:hover { background-color: #3d4d4e; }
         .btn-blue { background-color: var(--point-blue); color: white; }
-        .btn-blue:hover { background-color: #162a65; }
         .btn-orange { background-color: var(--edit-color); color: white; }
-        .btn-orange:hover { background-color: #d97706; }
 
-        /* 입력 폼 공통 */
         .form-group { margin-bottom: 12px; }
-        .form-group label {
-            display: block;
-            font-size: 12px;
-            font-weight: 600;
-            margin-bottom: 6px;
-            color: var(--text-main);
-        }
-        
-        /* [폰트 수정] 입력창 크기: 12px, 굵게 세팅 */
-        .form-control {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-main);
-            outline: none;
-            background-color: #fff;
-        }
-        .form-control:focus { border-color: var(--point-blue); }
-        .form-row-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-        .form-row-4 {
-            display: grid;
-            grid-template-columns: 1fr 1.1fr 1fr 1fr;
-            gap: 6px;
-        }
+        .form-group label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; color: var(--text-main); }
+        .form-control { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 12px; font-weight: 600; color: var(--text-main); outline: none; background-color: #fff; }
+        .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .form-row-4 { display: grid; grid-template-columns: 1fr 1.1fr 1fr 1fr; gap: 6px; }
 
-        /* 리스트 스타일 */
         .history-list { list-style: none; }
-        .history-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid #f1f5f9;
-        }
+        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f5f9; }
         .history-item:last-child { border-bottom: none; }
-        
         .item-left { display: flex; flex-direction: column; min-width: 0; flex: 1; }
         .item-tag-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-        
-        /* [폰트 수정 완료] 하단 리스트에 출력되는 모든 텍스트 요소를 12px 및 굵게 지정 */
         .item-date { font-size: 12px; font-weight: 600; color: var(--text-muted); }
-        .item-category {
-            font-size: 11px;
-            background: #e2e8f0;
-            color: #334155;
-            padding: 2px 5px;
-            border-radius: 4px;
-            font-weight: 600;
-        }
+        .item-category { font-size: 11px; background: #e2e8f0; color: #334155; padding: 2px 5px; border-radius: 4px; font-weight: 600; }
         .item-memo { font-size: 12px; font-weight: 600; margin-top: 4px; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .item-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
         .item-amount { font-size: 12px; font-weight: 700; color: var(--text-main); }
         
-        .btn-list-action {
-            background: none;
-            border: none;
-            color: #cbd5e1;
-            cursor: pointer;
-            font-size: 13px;
-            padding: 4px;
-            transition: color 0.15s;
-        }
+        .btn-list-action { background: none; border: none; color: #cbd5e1; cursor: pointer; font-size: 13px; padding: 4px; }
         .btn-list-action.edit-btn:hover { color: var(--edit-color); }
         .btn-list-action.delete-btn:hover { color: var(--danger-color); }
-        
         .empty-msg { text-align: center; color: var(--text-muted); font-size: 12px; font-weight: 600; padding: 20px 0; }
 
-        /* 통장 분할 요약리스트 */
-        .bank-summary-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-            gap: 8px;
-            background: #f8fafc;
-            padding: 12px;
-            border-radius: 10px;
-            margin-bottom: 14px;
-        }
-        .bank-summary-card {
-            background: #fff;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 8px;
-            text-align: center;
-        }
+        .bank-summary-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 8px; background: #f8fafc; padding: 12px; border-radius: 10px; margin-bottom: 14px; }
+        .bank-summary-card { background: #fff; border: 1px solid var(--border-color); border-radius: 6px; padding: 8px; text-align: center; }
         .bank-name-lbl { font-size: 11px; font-weight: bold; color: var(--text-muted); margin-bottom: 4px;}
         .bank-total-val { font-size: 12px; font-weight: 700; color: var(--point-blue); }
 
-        /* 안내 문구 배너 */
-        .edit-banner {
-            display: none;
-            background-color: #fffbeb;
-            border: 1px solid #fde68a;
-            color: #b45309;
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 600;
-            margin-bottom: 10px;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .edit-banner button {
-            background: none;
-            border: none;
-            color: #b45309;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 12px;
-        }
+        .edit-banner { display: none; background-color: #fffbeb; border: 1px solid #fde68a; color: #b45309; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; margin-bottom: 10px; justify-content: space-between; align-items: center; }
+        .edit-banner button { background: none; border: none; color: #b45309; font-weight: bold; cursor: pointer; font-size: 12px; }
     </style>
 </head>
 <body>
@@ -408,6 +214,7 @@
 <div class="container">
     <header>
         <h1>MY MINIMAL ACCOUNT</h1>
+        <div id="syncStatus">🔄 구글 데이터 불러오는 중...</div>
     </header>
 
     <div class="month-selector">
@@ -421,13 +228,14 @@
         <button id="tabBtnSalary" class="tab-btn" onclick="switchTab('salary')">💰 이체 계산기</button>
     </div>
 
+    <!-- TAB 1: 가계부 -->
     <div id="tabContentAccount" class="tab-content active">
         <div class="card">
             <div class="card-title">이번 달 자금 종합 현황</div>
             <div class="income-budget-grid">
                 <div class="input-box">
                     <label for="incomeInput">이번 달 총 소득</label>
-                    <input type="text" id="incomeInput" placeholder="0" oninput="formatAndSaveIncome()">
+                    <input type="text" id="incomeInput" placeholder="0" onchange="formatAndSaveIncome()">
                 </div>
                 <div class="input-box">
                     <label for="totalBudgetDisplayInput">항목별 예산 합계</label>
@@ -448,11 +256,9 @@
                     <span class="lbl">현재 총 지출</span>
                     <span class="val" id="displayExpense" style="color: var(--point-khaki);">0원</span>
                 </div>
-                
                 <div class="progress-bar-container">
                     <div id="budgetProgress" class="progress-bar"></div>
                 </div>
-
                 <div class="status-row" style="margin-top: 4px; font-size: 14px;">
                     <span class="lbl" id="remainLabel" style="font-weight: 700;">남은 예산</span>
                     <span class="val" id="displayRemain" style="font-weight: 800; color: var(--point-blue);">0원</span>
@@ -462,47 +268,39 @@
 
         <div class="card">
             <div class="card-title">항목별 예산 계획</div>
-            <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.4;">
-                ※ 이체 계산기 탭에 입력된 카테고리의 금액은 예산 박스에 <b>실시간 자동 누적</b>됩니다.
-            </p>
-            
             <div class="budget-box-container">
                 <div class="sub-budget-card">
                     <div class="sub-budget-title">[고정비]</div>
                     <div class="budget-inputs-grid">
-                        <div class="budget-input-item"><span>🍿 정기구독</span><input type="text" id="b_sub" placeholder="0" oninput="handleBudgetChange()"></div>
-                        <div class="budget-input-item"><span>🏠 집</span><input type="text" id="b_house" placeholder="0" oninput="handleBudgetChange()"></div>
-                        <div class="budget-input-item"><span>📱 통신비</span><input type="text" id="b_phone" placeholder="0" oninput="handleBudgetChange()"></div>
-                        <div class="budget-input-item"><span>🏥 보험료</span><input type="text" id="b_ins" placeholder="0" oninput="handleBudgetChange()"></div>
-                        <div class="budget-input-item"><span>🚗 자동차</span><input type="text" id="b_car" placeholder="0" oninput="handleBudgetChange()"></div>
-                        <div class="budget-input-item"><span>🐷 적금</span><input type="text" id="b_save" placeholder="0" oninput="handleBudgetChange()"></div>
+                        <div class="budget-input-item"><span>🍿 정기구독</span><input type="text" id="b_sub" placeholder="0" onchange="handleBudgetChange()"></div>
+                        <div class="budget-input-item"><span>🏠 집</span><input type="text" id="b_house" placeholder="0" onchange="handleBudgetChange()"></div>
+                        <div class="budget-input-item"><span>📱 통신비</span><input type="text" id="b_phone" placeholder="0" onchange="handleBudgetChange()"></div>
+                        <div class="budget-input-item"><span>🏥 보험료</span><input type="text" id="b_ins" placeholder="0" onchange="handleBudgetChange()"></div>
+                        <div class="budget-input-item"><span>🚗 자동차</span><input type="text" id="b_car" placeholder="0" onchange="handleBudgetChange()"></div>
+                        <div class="budget-input-item"><span>🐷 적금</span><input type="text" id="b_save" placeholder="0" onchange="handleBudgetChange()"></div>
                     </div>
                 </div>
-
                 <div class="sub-budget-card">
                     <div class="sub-budget-title">[변동비]</div>
                     <div class="budget-inputs-grid">
-                        <div class="budget-input-item"><span>🚌 교통비</span><input type="text" id="b_traffic" placeholder="0" oninput="handleBudgetChange()"></div>
-                        <div class="budget-input-item"><span>💳 카드</span><input type="text" id="b_card" placeholder="0" oninput="handleBudgetChange()"></div>
-                        <div class="budget-input-item"><span>🍔 식비</span><input type="text" id="b_food" placeholder="0" oninput="handleBudgetChange()"></div>
-                        <div class="budget-input-item"><span>🛍️ 쇼핑</span><input type="text" id="b_shop" placeholder="0" oninput="handleBudgetChange()"></div>
-                        <div class="budget-input-item"><span>🧻 생필품</span><input type="text" id="b_item" placeholder="0" oninput="handleBudgetChange()"></div>
-                        <div class="budget-input-item"><span>📦 기타</span><input type="text" id="b_etc" placeholder="0" oninput="handleBudgetChange()"></div>
+                        <div class="budget-input-item"><span>🚌 교통비</span><input type="text" id="b_traffic" placeholder="0" onchange="handleBudgetChange()"></div>
+                        <div class="budget-input-item"><span>💳 카드</span><input type="text" id="b_card" placeholder="0" onchange="handleBudgetChange()"></div>
+                        <div class="budget-input-item"><span>🍔 식비</span><input type="text" id="b_food" placeholder="0" onchange="handleBudgetChange()"></div>
+                        <div class="budget-input-item"><span>🛍️ 쇼핑</span><input type="text" id="b_shop" placeholder="0" onchange="handleBudgetChange()"></div>
+                        <div class="budget-input-item"><span>🧻 생필품</span><input type="text" id="b_item" placeholder="0" onchange="handleBudgetChange()"></div>
+                        <div class="budget-input-item"><span>📦 기타</span><input type="text" id="b_etc" placeholder="0" onchange="handleBudgetChange()"></div>
                     </div>
                 </div>
             </div>
-            
             <button class="btn-action btn-khaki" onclick="insertAllBudgetedCosts()">당월 예산 일괄 등록</button>
         </div>
 
         <div class="card">
             <div class="card-title" id="formTitleAccount">지출 입력</div>
-            
             <div id="editBannerAccount" class="edit-banner">
                 <span>✏️ 지출 항목 수정 중입니다.</span>
                 <button onclick="cancelAccountEdit()">수정 취소</button>
             </div>
-
             <div class="form-row-2">
                 <div class="form-group">
                     <label for="expenseDate">지출일</label>
@@ -513,17 +311,14 @@
                     <select id="categorySelect" class="form-control"></select>
                 </div>
             </div>
-
             <div class="form-group">
                 <label for="memoInput">메모</label>
                 <input type="text" id="memoInput" class="form-control" placeholder="예: 맛있는 삼겹살 외식">
             </div>
-            
             <div class="form-group">
                 <label for="amountInput">지출 금액 (원)</label>
                 <input type="text" id="amountInput" class="form-control" placeholder="0" oninput="formatAmountInput(this)">
             </div>
-            
             <button id="btnSubmitAccount" class="btn-action btn-blue" onclick="addOrUpdateExpense()">지출 등록</button>
         </div>
 
@@ -533,11 +328,10 @@
         </div>
     </div>
 
-
+    <!-- TAB 2: 이체 계산기 -->
     <div id="tabContentSalary" class="tab-content">
         <div class="card">
             <div class="card-title" style="color: var(--point-blue);">💰 통장별 이체 금액 계산기</div>
-            
             <div class="bank-summary-grid">
                 <div class="bank-summary-card"><div class="bank-name-lbl">KB GS Pay</div><div class="bank-total-val" id="sum_kb_gs">0</div></div>
                 <div class="bank-summary-card"><div class="bank-name-lbl">KB 통장</div><div class="bank-total-val" id="sum_kb">0</div></div>
@@ -558,7 +352,7 @@
                 </div>
                 <div class="form-group">
                     <label for="splitMemo">상세 항목</label>
-                    <input type="text" id="splitMemo" class="form-control" placeholder="예: 월세, 보험료">
+                    <input type="text" id="splitMemo" class="form-control" placeholder="예: 월세">
                 </div>
                 <div class="form-group">
                     <label for="splitBank">통장</label>
@@ -578,7 +372,7 @@
             <button id="btnSubmitSalary" class="btn-action btn-khaki" style="padding: 10px 12px; font-size:13px; margin-bottom:15px;" onclick="addOrUpdateSplitItem()">이체 분할 추가</button>
 
             <div style="margin-top: 10px; border-top: 1px dashed var(--border-color); padding-top: 15px;">
-                <div class="card-title" style="font-size: 13px; color: var(--text-muted); margin-bottom: 10px;">이번 달 분할 이체 리스트 (가계부 예산에 실시간 반영됨)</div>
+                <div class="card-title" style="font-size: 13px; color: var(--text-muted); margin-bottom: 10px;">이번 달 분할 이체 리스트</div>
                 <ul id="splitList" class="history-list"></ul>
             </div>
         </div>
@@ -586,9 +380,11 @@
 </div>
 
 <script>
+    // ⚠️ 중요: 1단계 완료 후 발급받은 배포 주소(URL)를 아래 따옴표 안에 꼭 넣어주세요!
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwYemvOQ1j1JfOeLD1o0UshnemJNp1e2YPdY_S2GlFA9s9KIGkPETKRJZbLEQjfTcuT/exec";
+
     let currentYearMonth = "";
-    let accountData = localStorage.getItem('minimal_account_v8_data') ? JSON.parse(localStorage.getItem('minimal_account_v8_data')) : {};
-    
+    let accountData = {};
     let editingAccountId = null;
     let editingSalaryId = null;
 
@@ -596,16 +392,11 @@
         "정기구독": "🍿", "집": "🏠", "통신비": "📱", "보험료": "🏥", "자동차": "🚗", "적금": "🐷",
         "교통비": "🚌", "카드": "💳", "식비": "🍔", "쇼핑": "🛍️", "생필품": "🧻", "기타": "📦"
     };
-
     const keyMapping = {
         "정기구독": "sub", "집": "house", "통신비": "phone", "보험료": "ins", "자동차": "car", "적금": "save",
         "교통비": "traffic", "카드": "card", "식비": "food", "쇼핑": "shop", "생필품": "item", "기타": "etc"
     };
-
-    let defaultBudgets = {
-        sub: 0, house: 0, phone: 0, ins: 0, car: 0, save: 0,
-        traffic: 0, card: 0, food: 0, shop: 0, item: 0, etc: 0
-    };
+    const defaultBudgets = { sub: 0, house: 0, phone: 0, ins: 0, car: 0, save: 0, traffic: 0, card: 0, food: 0, shop: 0, item: 0, etc: 0 };
 
     const initDate = new Date();
     currentYearMonth = `${initDate.getFullYear()}-${String(initDate.getMonth() + 1).padStart(2, '0')}`;
@@ -615,63 +406,67 @@
     function initPage() {
         document.getElementById('expenseDate').value = new Date().toISOString().substring(0, 10);
         setupCategorySelects();
-        loadMonthData();
+        fetchAllDataFromGoogle();
+    }
+
+    function setStatus(msg) {
+        document.getElementById('syncStatus').innerText = msg;
+    }
+
+    // 구글 스프레드시트 전체 데이터 조회 (GET)
+    function fetchAllDataFromGoogle() {
+        if(GOOGLE_SCRIPT_URL.includes("여기에_구글")) {
+            setStatus("❌ 구글 스크립트 URL을 연동해주세요.");
+            return;
+        }
+        setStatus("🔄 구글 시트 동기화 중...");
+        fetch(GOOGLE_SCRIPT_URL)
+            .then(res => res.json())
+            .then(data => {
+                accountData = data;
+                loadMonthData();
+                setStatus("✅ 실시간 동기화 완료");
+            })
+            .catch(err => {
+                console.error(err);
+                setStatus("❌ 동기화 실패 (네트워크 확인)");
+            });
+    }
+
+    // 구글 스프레드시트에 저장 (POST)
+    function saveCurrentMonthToGoogle() {
+        if(GOOGLE_SCRIPT_URL.includes("여기에_구글")) return;
+        setStatus("📤 구글 시트에 실시간 반영 중...");
+        
+        const payload = {
+            ym: currentYearMonth,
+            data: accountData[currentYearMonth]
+        };
+
+        fetch(GOOGLE_SCRIPT_URL, {
+            method: "POST",
+            mode: "no-cors", // Apps Script CORS 우회
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        })
+        .then(() => {
+            setStatus("✅ 클라우드 저장 완료");
+        })
+        .catch(err => {
+            console.error(err);
+            setStatus("❌ 저장 실패");
+        });
     }
 
     function setupCategorySelects() {
         const selectAccount = document.getElementById('categorySelect');
         const selectSalary = document.getElementById('splitCategory');
-        
-        selectAccount.innerHTML = '';
-        selectSalary.innerHTML = '';
-
+        selectAccount.innerHTML = ''; selectSalary.innerHTML = '';
         Object.keys(categoryEmojis).forEach(cat => {
             const optText = `${categoryEmojis[cat]} ${cat}`;
-            
-            const opt1 = document.createElement('option');
-            opt1.value = cat;
-            opt1.innerText = optText;
-            selectAccount.appendChild(opt1);
-
-            const opt2 = document.createElement('option');
-            opt2.value = cat;
-            opt2.innerText = optText;
-            selectSalary.appendChild(opt2);
+            const opt1 = document.createElement('option'); opt1.value = cat; opt1.innerText = optText; selectAccount.appendChild(opt1);
+            const opt2 = document.createElement('option'); opt2.value = cat; opt2.innerText = optText; selectSalary.appendChild(opt2);
         });
-    }
-
-    function switchTab(tabName) {
-        document.getElementById('tabBtnAccount').classList.remove('active');
-        document.getElementById('tabBtnSalary').classList.remove('active');
-        document.getElementById('tabContentAccount').classList.remove('active');
-        document.getElementById('tabContentSalary').classList.remove('active');
-
-        if (tabName === 'account') {
-            document.getElementById('tabBtnAccount').classList.add('active');
-            document.getElementById('tabContentAccount').classList.add('active');
-        } else {
-            document.getElementById('tabBtnSalary').classList.add('active');
-            document.getElementById('tabContentSalary').classList.add('active');
-        }
-    }
-
-    function numToCommaStr(num) {
-        if (isNaN(num)) return "0";
-        return num.toLocaleString();
-    }
-
-    function commaStrToNum(str) {
-        if (!str) return 0;
-        return parseInt(str.replace(/,/g, '')) || 0;
-    }
-
-    function formatAmountInput(inputEl) {
-        let num = commaStrToNum(inputEl.value);
-        if (num === 0) {
-            inputEl.value = inputEl.value === "" ? "" : "0";
-        } else {
-            inputEl.value = numToCommaStr(num);
-        }
     }
 
     function loadMonthData() {
@@ -680,32 +475,18 @@
         document.getElementById('historyTitle').innerText = `${month}월 지출 내역`;
 
         if (!accountData[currentYearMonth]) {
-            accountData[currentYearMonth] = {
-                income: 0, budgets: { ...defaultBudgets }, expenses: [], splits: []
-            };
+            accountData[currentYearMonth] = { income: 0, budgets: { ...defaultBudgets }, expenses: [], splits: [] };
         }
 
         const mData = accountData[currentYearMonth];
-        
-        if (mData.budgets && mData.budgets['생필품 구매']) {
-            mData.budgets['item'] = mData.budgets['생필품 구매'];
-            delete mData.budgets['생필품 구매'];
-        }
-        if (mData.expenses) {
-            mData.expenses.forEach(e => { if(e.category === "생필품 구매") e.category = "생필품"; });
-        }
-        if (mData.splits) {
-            mData.splits.forEach(s => { if(s.category === "생필품 구매") s.category = "생필품"; });
-        }
-
         if (!mData.budgets) mData.budgets = { ...defaultBudgets };
+        if (!mData.expenses) mData.expenses = [];
         if (!mData.splits) mData.splits = [];
 
         document.getElementById('incomeInput').value = mData.income > 0 ? numToCommaStr(mData.income) : '';
         
         cancelAccountEdit();
         cancelSalaryEdit();
-
         renderBudgetFields();
         renderList();
         renderSplitList();
@@ -713,8 +494,8 @@
 
     function renderBudgetFields() {
         const mData = accountData[currentYearMonth];
-        const b = mData.budgets || { ...defaultBudgets };
-        const splits = mData.splits || [];
+        const b = mData.budgets;
+        const splits = mData.splits;
 
         let splitSums = { sub:0, house:0, phone:0, ins:0, car:0, save:0, traffic:0, card:0, food:0, shop:0, item:0, etc:0 };
         splits.forEach(item => {
@@ -725,12 +506,232 @@
         Object.keys(keyMapping).forEach(catName => {
             const key = keyMapping[catName];
             const el = document.getElementById(`b_${key}`);
-            
-            const totalBudgetVal = (b[key] || 0) + splitSums[key];
-            el.value = numToCommaStr(totalBudgetVal);
+            el.value = numToCommaStr((b[key] || 0) + splitSums[key]);
+        });
+        calculateTotalBudgetSum();
+    }
+
+    function handleBudgetChange() {
+        const mData = accountData[currentYearMonth];
+        const splits = mData.splits;
+
+        let splitSums = { sub:0, house:0, phone:0, ins:0, car:0, save:0, traffic:0, card:0, food:0, shop:0, item:0, etc:0 };
+        splits.forEach(item => {
+            const key = keyMapping[item.category];
+            if (key) splitSums[key] += item.amount;
+        });
+
+        Object.keys(keyMapping).forEach(catName => {
+            const key = keyMapping[catName];
+            const el = document.getElementById(`b_${key}`);
+            formatAmountInput(el);
+            let pureManualVal = commaStrToNum(el.value) - splitSums[key];
+            mData.budgets[key] = pureManualVal < 0 ? 0 : pureManualVal;
         });
 
         calculateTotalBudgetSum();
+        saveCurrentMonthToGoogle();
+    }
+
+    function calculateTotalBudgetSum() {
+        const mData = accountData[currentYearMonth];
+        let totalManual = 0;
+        Object.keys(keyMapping).forEach(catName => { totalManual += (mData.budgets[keyMapping[catName]] || 0); });
+        let totalSplits = mData.splits.reduce((sum, item) => sum + item.amount, 0);
+        document.getElementById('totalBudgetDisplayInput').value = numToCommaStr(totalManual + totalSplits);
+        updateDashboard();
+    }
+
+    function updateDashboard() {
+        const mData = accountData[currentYearMonth];
+        const income = mData.income || 0;
+        let totalManual = 0;
+        Object.keys(keyMapping).forEach(catName => { totalManual += (mData.budgets[keyMapping[catName]] || 0); });
+        let totalSplits = mData.splits.reduce((sum, item) => sum + item.amount, 0);
+        const budget = totalManual + totalSplits;
+        const totalExpense = mData.expenses.reduce((sum, item) => sum + item.amount, 0);
+
+        document.getElementById('budgetRatio').innerText = `${income > 0 ? Math.round((budget / income) * 100) : 0}%`;
+        document.getElementById('displayBudget').innerText = numToCommaStr(budget) + '원';
+        document.getElementById('displayExpense').innerText = numToCommaStr(totalExpense) + '원';
+
+        const remain = budget - totalExpense;
+        const progressPercent = budget > 0 ? (totalExpense / budget) * 100 : 0;
+        const progressBar = document.getElementById('budgetProgress');
+        progressBar.style.width = Math.min(progressPercent, 100) + '%';
+        
+        if (progressPercent > 100) progressBar.classList.add('warning');
+        else progressBar.classList.remove('warning');
+
+        const remainLabel = document.getElementById('remainLabel');
+        const displayRemain = document.getElementById('displayRemain');
+
+        if (remain >= 0) {
+            remainLabel.innerText = "남은 예산"; remainLabel.style.color = "var(--text-main)";
+            displayRemain.innerText = numToCommaStr(remain) + '원'; displayRemain.style.color = "var(--point-blue)";
+        } else {
+            remainLabel.innerText = "예산 초과"; remainLabel.style.color = "var(--danger-color)";
+            displayRemain.innerText = numToCommaStr(Math.abs(remain)) + '원'; displayRemain.style.color = "var(--danger-color)";
+        }
+    }
+
+    function addOrUpdateExpense() {
+        const dateInput = document.getElementById('expenseDate').value;
+        const category = document.getElementById('categorySelect').value;
+        const memo = document.getElementById('memoInput').value.trim();
+        const amountEl = document.getElementById('amountInput');
+        const amount = commaStrToNum(amountEl.value);
+
+        if (!dateInput || amount <= 0) { alert("지출일과 올바른 금액을 입력해 주세요."); return; }
+        const mData = accountData[currentYearMonth];
+
+        if (editingAccountId !== null) {
+            const idx = mData.expenses.findIndex(e => e.id === editingAccountId);
+            if (idx !== -1) {
+                mData.expenses[idx] = { id: editingAccountId, date: dateInput, category, memo: memo || `${category} 지출`, amount };
+            }
+            cancelAccountEdit();
+        } else {
+            mData.expenses.push({ id: Date.now(), date: dateInput, category, memo: memo || `${category} 지출`, amount });
+        }
+
+        renderList();
+        updateDashboard();
+        saveCurrentMonthToGoogle();
+        document.getElementById('memoInput').value = ""; amountEl.value = "";
+    }
+
+    function deleteExpense(id) {
+        if (!confirm("이 지출 내역을 삭제하시겠습니까?")) return;
+        accountData[currentYearMonth].expenses = accountData[currentYearMonth].expenses.filter(e => e.id !== id);
+        if (editingAccountId === id) cancelAccountEdit();
+        renderList();
+        updateDashboard();
+        saveCurrentMonthToGoogle();
+    }
+
+    function addOrUpdateSplitItem() {
+        const category = document.getElementById('splitCategory').value;
+        const memo = document.getElementById('splitMemo').value.trim();
+        const bank = document.getElementById('splitBank').value;
+        const amountEl = document.getElementById('splitAmount');
+        const amount = commaStrToNum(amountEl.value);
+
+        if (amount <= 0) { alert("올바른 금액을 입력해 주세요."); return; }
+        const mData = accountData[currentYearMonth];
+
+        if (editingSalaryId !== null) {
+            const idx = mData.splits.findIndex(s => s.id === editingSalaryId);
+            if (idx !== -1) {
+                mData.splits[idx] = { id: editingSalaryId, category, memo: memo || `${category} 이체`, bank, amount };
+            }
+            cancelSalaryEdit();
+        } else {
+            mData.splits.push({ id: Date.now(), category, memo: memo || `${category} 이체`, bank, amount });
+        }
+
+        renderSplitList();
+        renderBudgetFields();
+        saveCurrentMonthToGoogle();
+        document.getElementById('splitMemo').value = ""; amountEl.value = "";
+    }
+
+    function deleteSplitItem(id) {
+        if (!confirm("이 이체 분할 항목을 삭제하시겠습니까?")) return;
+        accountData[currentYearMonth].splits = accountData[currentYearMonth].splits.filter(s => s.id !== id);
+        if (editingSalaryId === id) cancelSalaryEdit();
+        renderSplitList();
+        renderBudgetFields();
+        saveCurrentMonthToGoogle();
+    }
+
+    function insertAllBudgetedCosts() {
+        const mData = accountData[currentYearMonth];
+        let splitSums = { sub:0, house:0, phone:0, ins:0, car:0, save:0, traffic:0, card:0, food:0, shop:0, item:0, etc:0 };
+        mData.splits.forEach(item => { splitSums[keyMapping[item.category]] += item.amount; });
+
+        let addedCount = 0;
+        const todayStr = new Date().toISOString().substring(0, 10);
+
+        Object.keys(keyMapping).forEach(catName => {
+            const key = keyMapping[catName];
+            const totalBudgetAmount = (mData.budgets[key] || 0) + splitSums[key];
+
+            if (totalBudgetAmount > 0) {
+                if (!mData.expenses.some(e => e.category === catName && e.memo === `[예산] ${catName}`)) {
+                    mData.expenses.push({ id: Date.now() + addedCount, date: todayStr, category: catName, memo: `[예산] ${catName}`, amount: totalBudgetAmount });
+                    addedCount++;
+                }
+            }
+        });
+
+        if (addedCount > 0) {
+            alert(`${addedCount}개의 예산 항목이 지출 내역에 등록되었습니다.`);
+            renderList(); updateDashboard(); saveCurrentMonthToGoogle();
+        } else {
+            alert("이미 모두 등록되었거나 등록할 예산 금액이 없습니다.");
+        }
+    }
+
+    function renderList() {
+        const listEl = document.getElementById('historyList'); listEl.innerHTML = "";
+        const list = accountData[currentYearMonth].expenses || [];
+        if (list.length === 0) { listEl.innerHTML = `<li class="empty-msg">이번 달 지출 내역이 없습니다.</li>`; return; }
+
+        [...list].sort((a, b) => new Date(b.date) - new Date(a.date) || b.id - a.id).forEach(item => {
+            const li = document.createElement('li'); li.className = "history-item";
+            const displayDate = item.date.substring(5).replace('-', '/');
+            li.innerHTML = `
+                <div class="item-left">
+                    <div class="item-tag-row">
+                        <span class="item-date">${displayDate}</span>
+                        <span class="item-category">${categoryEmojis[item.category] || "❓"} ${item.category}</span>
+                    </div>
+                    <div class="item-memo">${item.memo}</div>
+                </div>
+                <div class="item-right">
+                    <span class="item-amount">${numToCommaStr(item.amount)}원</span>
+                    <button class="btn-list-action edit-btn" onclick="editExpense(${item.id})">✏️</button>
+                    <button class="btn-list-action delete-btn" onclick="deleteExpense(${item.id})">🗑️</button>
+                </div>`;
+            listEl.appendChild(li);
+        });
+    }
+
+    function renderSplitList() {
+        const listEl = document.getElementById('splitList'); listEl.innerHTML = "";
+        const list = accountData[currentYearMonth].splits || [];
+        let bankSums = { "KB GS Pay": 0, "KB": 0, "카뱅": 0, "농협": 0, "하나": 0 };
+
+        if (list.length === 0) { listEl.innerHTML = `<li class="empty-msg">등록된 분할 이체 항목이 없습니다.</li>`; updateBankSummaryDisplays(bankSums); return; }
+
+        list.forEach(item => {
+            if (bankSums[item.bank] !== undefined) bankSums[item.bank] += item.amount;
+            const li = document.createElement('li'); li.className = "history-item";
+            li.innerHTML = `
+                <div class="item-left">
+                    <div class="item-tag-row">
+                        <span class="item-category" style="background:#f1f5f9; color:var(--point-khaki);">${item.bank} 통장</span>
+                        <span class="item-category">${categoryEmojis[item.category] || "📦"} ${item.category}</span>
+                    </div>
+                    <div class="item-memo">${item.memo}</div>
+                </div>
+                <div class="item-right">
+                    <span class="item-amount" style="color:var(--point-khaki);">${numToCommaStr(item.amount)}원</span>
+                    <button class="btn-list-action edit-btn" onclick="editSplitItem(${item.id})">✏️</button>
+                    <button class="btn-list-action delete-btn" onclick="deleteSplitItem(${item.id})">🗑️</button>
+                </div>`;
+            listEl.appendChild(li);
+        });
+        updateBankSummaryDisplays(bankSums);
+    }
+
+    function updateBankSummaryDisplays(sums) {
+        document.getElementById('sum_kb_gs').innerText = numToCommaStr(sums["KB GS Pay"]);
+        document.getElementById('sum_kb').innerText = numToCommaStr(sums["KB"]);
+        document.getElementById('sum_kaba').innerText = numToCommaStr(sums["카뱅"]);
+        document.getElementById('sum_nh').innerText = numToCommaStr(sums["농협"]);
+        document.getElementById('sum_hana').innerText = numToCommaStr(sums["하나"]);
     }
 
     function changeMonth(step) {
@@ -744,170 +745,22 @@
         const inputEl = document.getElementById('incomeInput');
         formatAmountInput(inputEl);
         accountData[currentYearMonth].income = commaStrToNum(inputEl.value);
-        saveData();
         updateDashboard();
-    }
-
-    function handleBudgetChange() {
-        const mData = accountData[currentYearMonth];
-        const splits = mData.splits || [];
-
-        let splitSums = { sub:0, house:0, phone:0, ins:0, car:0, save:0, traffic:0, card:0, food:0, shop:0, item:0, etc:0 };
-        splits.forEach(item => {
-            const key = keyMapping[item.category];
-            if (key) splitSums[key] += item.amount;
-        });
-
-        Object.keys(keyMapping).forEach(catName => {
-            const key = keyMapping[catName];
-            const el = document.getElementById(`b_${key}`);
-            formatAmountInput(el);
-            
-            const currentDisplayVal = commaStrToNum(el.value);
-            let pureManualVal = currentDisplayVal - splitSums[key];
-            if(pureManualVal < 0) pureManualVal = 0; 
-
-            mData.budgets[key] = pureManualVal;
-        });
-
-        saveData();
-        calculateTotalBudgetSum();
-    }
-
-    function calculateTotalBudgetSum() {
-        const mData = accountData[currentYearMonth];
-        const b = mData.budgets;
-        const splits = mData.splits || [];
-
-        let totalManual = 0;
-        Object.keys(keyMapping).forEach(catName => {
-            const key = keyMapping[catName];
-            totalManual += (b[key] || 0);
-        });
-
-        let totalSplits = splits.reduce((sum, item) => sum + item.amount, 0);
-        const overallBudgetSum = totalManual + totalSplits;
-        
-        document.getElementById('totalBudgetDisplayInput').value = numToCommaStr(overallBudgetSum);
-        updateDashboard();
-    }
-
-    function updateDashboard() {
-        const mData = accountData[currentYearMonth];
-        const income = mData.income || 0;
-        
-        const b = mData.budgets;
-        let totalManual = 0;
-        Object.keys(keyMapping).forEach(catName => { totalManual += (b[keyMapping[catName]] || 0); });
-        const splits = mData.splits || [];
-        let totalSplits = splits.reduce((sum, item) => sum + item.amount, 0);
-        
-        const budget = totalManual + totalSplits;
-        
-        const expenses = mData.expenses || [];
-        const totalExpense = expenses.reduce((sum, item) => sum + item.amount, 0);
-
-        const ratio = income > 0 ? Math.round((budget / income) * 100) : 0;
-
-        document.getElementById('budgetRatio').innerText = `${ratio}%`;
-        document.getElementById('displayBudget').innerText = numToCommaStr(budget) + '원';
-        document.getElementById('displayExpense').innerText = numToCommaStr(totalExpense) + '원';
-
-        const remain = budget - totalExpense;
-        const progressPercent = budget > 0 ? (totalExpense / budget) * 100 : 0;
-        
-        const progressBar = document.getElementById('budgetProgress');
-        progressBar.style.width = Math.min(progressPercent, 100) + '%';
-        if (progressPercent > 100) progressBar.classList.add('warning');
-        else progressBar.classList.remove('warning');
-
-        const remainLabel = document.getElementById('remainLabel');
-        const displayRemain = document.getElementById('displayRemain');
-
-        if (remain >= 0) {
-            remainLabel.innerText = "남은 예산";
-            remainLabel.style.color = "var(--text-main)";
-            displayRemain.innerText = numToCommaStr(remain) + '원';
-            displayRemain.style.color = "var(--point-blue)";
-        } else {
-            remainLabel.innerText = "예산 초과";
-            remainLabel.style.color = "var(--danger-color)";
-            displayRemain.innerText = numToCommaStr(Math.abs(remain)) + '원';
-            displayRemain.style.color = "var(--danger-color)";
-        }
-    }
-
-    function addOrUpdateExpense() {
-        const dateInput = document.getElementById('expenseDate').value;
-        const category = document.getElementById('categorySelect').value;
-        const memo = document.getElementById('memoInput').value.trim();
-        const amountEl = document.getElementById('amountInput');
-        const amount = commaStrToNum(amountEl.value);
-
-        if (!dateInput || amount <= 0) {
-            alert("지출일과 올바른 금액을 입력해 주세요.");
-            return;
-        }
-
-        const mData = accountData[currentYearMonth];
-
-        if (editingAccountId !== null) {
-            const idx = mData.expenses.findIndex(e => e.id === editingAccountId);
-            if (idx !== -1) {
-                mData.expenses[idx].date = dateInput;
-                mData.expenses[idx].category = category;
-                mData.expenses[idx].memo = memo || `${category} 지출`;
-                mData.expenses[idx].amount = amount;
-            }
-            cancelAccountEdit();
-        } else {
-            const newItem = {
-                id: Date.now(),
-                date: dateInput,
-                category: category,
-                memo: memo || `${category} 지출`,
-                amount: amount
-            };
-            mData.expenses.push(newItem);
-        }
-
-        saveData();
-        renderList();
-        updateDashboard();
-
-        document.getElementById('memoInput').value = "";
-        amountEl.value = "";
-    }
-
-    function deleteExpense(id) {
-        if (!confirm("이 지출 내역을 삭제하시겠습니까?")) return;
-        const mData = accountData[currentYearMonth];
-        mData.expenses = mData.expenses.filter(e => e.id !== id);
-        
-        if (editingAccountId === id) cancelAccountEdit();
-
-        saveData();
-        renderList();
-        updateDashboard();
+        saveCurrentMonthToGoogle();
     }
 
     function editExpense(id) {
-        const mData = accountData[currentYearMonth];
-        const item = mData.expenses.find(e => e.id === id);
+        const item = accountData[currentYearMonth].expenses.find(e => e.id === id);
         if (!item) return;
-
         editingAccountId = id;
         document.getElementById('expenseDate').value = item.date;
         document.getElementById('categorySelect').value = item.category;
         document.getElementById('memoInput').value = item.memo;
         document.getElementById('amountInput').value = numToCommaStr(item.amount);
-
         document.getElementById('formTitleAccount').innerText = "지출 수정하기";
         document.getElementById('btnSubmitAccount').innerText = "수정 완료";
         document.getElementById('btnSubmitAccount').className = "btn-action btn-orange";
         document.getElementById('editBannerAccount').style.display = "flex";
-        
-        window.scrollTo({ top: document.getElementById('formTitleAccount').offsetTop - 20, behavior: 'smooth' });
     }
 
     function cancelAccountEdit() {
@@ -916,115 +769,18 @@
         document.getElementById('btnSubmitAccount').innerText = "지출 등록";
         document.getElementById('btnSubmitAccount').className = "btn-action btn-blue";
         document.getElementById('editBannerAccount').style.display = "none";
-
         document.getElementById('expenseDate').value = new Date().toISOString().substring(0, 10);
-        document.getElementById('memoInput').value = "";
-        document.getElementById('amountInput').value = "";
-    }
-
-    function renderList() {
-        const listEl = document.getElementById('historyList');
-        listEl.innerHTML = "";
-        const mData = accountData[currentYearMonth];
-        const list = mData.expenses || [];
-
-        if (list.length === 0) {
-            listEl.innerHTML = `<li class="empty-msg">이번 달 지출 내역이 없습니다.</li>`;
-            return;
-        }
-
-        const sorted = [...list].sort((a, b) => new Date(b.date) - new Date(a.date) || b.id - a.id);
-
-        sorted.forEach(item => {
-            const li = document.createElement('li');
-            li.className = "history-item";
-            
-            const displayDate = item.date.substring(5).replace('-', '/');
-            const emoji = categoryEmojis[item.category] || "❓";
-
-            li.innerHTML = `
-                <div class="item-left">
-                    <div class="item-tag-row">
-                        <span class="item-date">${displayDate}</span>
-                        <span class="item-category">${emoji} ${item.category}</span>
-                    </div>
-                    <div class="item-memo">${item.memo}</div>
-                </div>
-                <div class="item-right">
-                    <span class="item-amount">${numToCommaStr(item.amount)}원</span>
-                    <button class="btn-list-action edit-btn" onclick="editExpense(${item.id})">✏️</button>
-                    <button class="btn-list-action delete-btn" onclick="deleteExpense(${item.id})">🗑️</button>
-                </div>
-            `;
-            listEl.appendChild(li);
-        });
-    }
-
-    function addOrUpdateSplitItem() {
-        const category = document.getElementById('splitCategory').value;
-        const memo = document.getElementById('splitMemo').value.trim();
-        const bank = document.getElementById('splitBank').value;
-        const amountEl = document.getElementById('splitAmount');
-        const amount = commaStrToNum(amountEl.value);
-
-        if (amount <= 0) {
-            alert("올바른 금액을 입력해 주세요.");
-            return;
-        }
-
-        const mData = accountData[currentYearMonth];
-
-        if (editingSalaryId !== null) {
-            const idx = mData.splits.findIndex(s => s.id === editingSalaryId);
-            if (idx !== -1) {
-                mData.splits[idx].category = category;
-                mData.splits[idx].memo = memo || `${category} 이체`;
-                mData.splits[idx].bank = bank;
-                mData.splits[idx].amount = amount;
-            }
-            cancelSalaryEdit();
-        } else {
-            const newItem = {
-                id: Date.now(),
-                category: category,
-                memo: memo || `${category} 이체`,
-                bank: bank,
-                amount: amount
-            };
-            mData.splits.push(newItem);
-        }
-
-        saveData();
-        renderSplitList();
-        renderBudgetFields();
-
-        document.getElementById('splitMemo').value = "";
-        amountEl.value = "";
-    }
-
-    function deleteSplitItem(id) {
-        if (!confirm("이 이체 분할 항목을 삭제하시겠습니까?")) return;
-        const mData = accountData[currentYearMonth];
-        mData.splits = mData.splits.filter(s => s.id !== id);
-
-        if (editingSalaryId === id) cancelSalaryEdit();
-
-        saveData();
-        renderSplitList();
-        renderBudgetFields();
+        document.getElementById('memoInput').value = ""; document.getElementById('amountInput').value = "";
     }
 
     function editSplitItem(id) {
-        const mData = accountData[currentYearMonth];
-        const item = mData.splits.find(s => s.id === id);
+        const item = accountData[currentYearMonth].splits.find(s => s.id === id);
         if (!item) return;
-
         editingSalaryId = id;
         document.getElementById('splitCategory').value = item.category;
         document.getElementById('splitMemo').value = item.memo;
         document.getElementById('splitBank').value = item.bank;
         document.getElementById('splitAmount').value = numToCommaStr(item.amount);
-
         document.getElementById('btnSubmitSalary').innerText = "이체 항목 수정 완료";
         document.getElementById('btnSubmitSalary').className = "btn-action btn-orange";
         document.getElementById('editBannerSalary').style.display = "flex";
@@ -1035,108 +791,26 @@
         document.getElementById('btnSubmitSalary').innerText = "이체 분할 추가";
         document.getElementById('btnSubmitSalary').className = "btn-action btn-khaki";
         document.getElementById('editBannerSalary').style.display = "none";
-
-        document.getElementById('splitMemo').value = "";
-        document.getElementById('splitAmount').value = "";
+        document.getElementById('splitMemo').value = ""; document.getElementById('splitAmount').value = "";
     }
 
-    function renderSplitList() {
-        const listEl = document.getElementById('splitList');
-        listEl.innerHTML = "";
-
-        const mData = accountData[currentYearMonth];
-        const list = mData.splits || [];
-
-        let bankSums = { "KB GS Pay": 0, "KB": 0, "카뱅": 0, "농협": 0, "하나": 0 };
-
-        if (list.length === 0) {
-            listEl.innerHTML = `<li class="empty-msg">등록된 분할 이체 항목이 없습니다.</li>`;
-            updateBankSummaryDisplays(bankSums);
-            return;
-        }
-
-        list.forEach(item => {
-            if (bankSums[item.bank] !== undefined) {
-                bankSums[item.bank] += item.amount;
-            }
-
-            const li = document.createElement('li');
-            li.className = "history-item";
-            const emoji = categoryEmojis[item.category] || "📦";
-
-            li.innerHTML = `
-                <div class="item-left">
-                    <div class="item-tag-row">
-                        <span class="item-category" style="background:#f1f5f9; color:var(--point-khaki);">${item.bank} 통장</span>
-                        <span class="item-category" style="font-size:11px;">${emoji} ${item.category}</span>
-                    </div>
-                    <div class="item-memo">${item.memo}</div>
-                </div>
-                <div class="item-right">
-                    <span class="item-amount" style="color:var(--point-khaki);">${numToCommaStr(item.amount)}원</span>
-                    <button class="btn-list-action edit-btn" onclick="editSplitItem(${item.id})">✏️</button>
-                    <button class="btn-list-action delete-btn" onclick="deleteSplitItem(${item.id})">🗑️</button>
-                </div>
-            `;
-            listEl.appendChild(li);
-        });
-
-        updateBankSummaryDisplays(bankSums);
-    }
-
-    function updateBankSummaryDisplays(sums) {
-        document.getElementById('sum_kb_gs').innerText = numToCommaStr(sums["KB GS Pay"]);
-        document.getElementById('sum_kb').innerText = numToCommaStr(sums["KB"]);
-        document.getElementById('sum_kaba').innerText = numToCommaStr(sums["카뱅"]);
-        document.getElementById('sum_nh').innerText = numToCommaStr(sums["농협"]);
-        document.getElementById('sum_hana').innerText = numToCommaStr(sums["하나"]);
-    }
-
-    function insertAllBudgetedCosts() {
-        const mData = accountData[currentYearMonth];
-        const b = mData.budgets;
-        const splits = mData.splits || [];
-
-        let splitSums = { sub:0, house:0, phone:0, ins:0, car:0, save:0, traffic:0, card:0, food:0, shop:0, item:0, etc:0 };
-        splits.forEach(item => {
-            const key = keyMapping[item.category];
-            if (key) splitSums[key] += item.amount;
-        });
-
-        let addedCount = 0;
-        const todayStr = new Date().toISOString().substring(0, 10);
-
-        Object.keys(keyMapping).forEach(catName => {
-            const key = keyMapping[catName];
-            const totalBudgetAmount = (b[key] || 0) + splitSums[key];
-
-            if (totalBudgetAmount > 0) {
-                const isExist = mData.expenses.some(e => e.category === catName && e.memo === `[예산] ${catName}`);
-                if (!isExist) {
-                    mData.expenses.push({
-                        id: Date.now() + addedCount,
-                        date: todayStr,
-                        category: catName,
-                        memo: `[예산] ${catName}`,
-                        amount: totalBudgetAmount
-                    });
-                    addedCount++;
-                }
-            }
-        });
-
-        if (addedCount > 0) {
-            alert(`${addedCount}개의 예산 항목이 지출 내역에 등록되었습니다.`);
-            saveData();
-            renderList();
-            updateDashboard();
+    function switchTab(tabName) {
+        document.getElementById('tabBtnAccount').classList.remove('active');
+        document.getElementById('tabBtnSalary').classList.remove('active');
+        document.getElementById('tabContentAccount').classList.remove('active');
+        document.getElementById('tabContentSalary').classList.remove('active');
+        if (tabName === 'account') {
+            document.getElementById('tabBtnAccount').classList.add('active'); document.getElementById('tabContentAccount').classList.add('active');
         } else {
-            alert("이미 모두 등록되었거나 등록할 예산 금액이 없습니다.");
+            document.getElementById('tabBtnSalary').classList.add('active'); document.getElementById('tabContentSalary').classList.add('active');
         }
     }
 
-    function saveData() {
-        localStorage.setItem('minimal_account_v8_data', JSON.stringify(accountData));
+    function numToCommaStr(num) { if (isNaN(num)) return "0"; return num.toLocaleString(); }
+    function commaStrToNum(str) { if (!str) return 0; return parseInt(str.replace(/,/g, '')) || 0; }
+    function formatAmountInput(inputEl) {
+        let num = commaStrToNum(inputEl.value);
+        inputEl.value = num === 0 ? (inputEl.value === "" ? "" : "0") : numToCommaStr(num);
     }
 </script>
 </body>
