@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>모던 미니멀 가계부 v12.0 (필터링 및 실적 비교 추가형)</title>
+    <title>모던 미니멀 가계부 v12.1 (강제 양방향 동기화 보강형)</title>
     <style>
         :root {
             --bg-color: #f4f6f8;
@@ -134,7 +134,6 @@
         .tab-content .card:not(:first-child) { border-radius: 14px; }
         .card-title { font-size: 15px; font-weight: 700; color: var(--point-gray); margin-bottom: 16px; }
         
-        /* 지출내역 헤더 정렬용 */
         .history-title-area { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px; }
         .history-title-area .card-title { margin-bottom: 0; }
         .filter-select { padding: 4px 8px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 12px; font-weight: 600; color: var(--text-main); outline: none; background: #fff; }
@@ -187,7 +186,6 @@
         .budget-item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; min-width: 0; gap: 4px; }
         .budget-item-header span { font-size: 11px; color: var(--text-main); font-weight: 700; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; }
         
-        /* 예산 / 실적 비교용 스타일 */
         .budget-item-header .subtotal-span { font-size: 10.5px; color: var(--text-muted); font-weight: 600; flex-shrink: 0; text-align: right; }
         .budget-item-header .subtotal-span .b-val { color: var(--point-blue); font-weight: 700; }
         .budget-item-header .subtotal-span .e-val { color: var(--point-khaki); font-weight: 700; }
@@ -399,6 +397,7 @@
 </div>
 
 <script>
+    // ⚠️ 아래 주소 부분에 본인의 구글 웹앱 URL(AKfycby... 주소)을 꼭 정확히 복사해 넣어주세요!
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyGjYQu7E158Uwa00FgIbDwDZ_-dE1xiFJjEn8zP_kaq6X9cA2q3AdCi2Thzf2huM7N/exec";
 
     let currentYearMonth = "";
@@ -437,14 +436,18 @@
         document.getElementById('syncStatus').innerText = msg;
     }
 
+    // 🆕 [동기화 핵심개선] 구글 데이터 요청 시 브라우저가 옛날 캐시를 재활용하지 못하도록 강제 무력화 파라미터 적용
     function fetchAllDataFromGoogle() {
         if(GOOGLE_SCRIPT_URL.includes("여기에_구글")) {
             setStatus("❌ 구글 스크립트 URL을 연동해주세요.");
             return;
         }
         setStatus("🔄 구글 시트 동기화 중...");
-        const cacheBuster = GOOGLE_SCRIPT_URL + (GOOGLE_SCRIPT_URL.includes("?") ? "&" : "?") + "_ts=" + new Date().getTime();
-        fetch(cacheBuster)
+        
+        // 주소 뒤에 매 밀리초 단위의 타임스탬프를 난수로 붙여 모바일 브라우저의 캐싱 본능을 완전 차단합니다.
+        const forcedUrl = GOOGLE_SCRIPT_URL + (GOOGLE_SCRIPT_URL.includes("?") ? "&" : "?") + "_nocache=" + new Date().getTime();
+        
+        fetch(forcedUrl, { method: "GET", cache: "no-store", headers: { "Cache-Control": "no-cache", "Pragma": "no-cache" } })
             .then(res => res.json())
             .then(data => {
                 accountData = data;
@@ -472,6 +475,8 @@
         })
         .then(res => {
             setStatus("✅ 클라우드 저장 완료");
+            // 🆕 저장 직후 PC-모바일 간 싱크 차단 오류를 막기 위해 구글 클라우드 데이터를 즉시 1회 재동기화 강제 집행
+            setTimeout(fetchAllDataFromGoogle, 300);
         })
         .catch(err => {
             console.error(err);
@@ -527,7 +532,6 @@
             }
         }
 
-        // 소계 영역을 예산 / 실적이 동시에 표기되도록 구조 확장
         block.innerHTML = `
             <div class="budget-item-header">
                 <span>${categoryEmojis[cat]} ${cat}</span>
@@ -557,7 +561,7 @@
         if (!mData.splits) mData.splits = [];
 
         document.getElementById('incomeInput').value = mData.income > 0 ? numToCommaStr(mData.income) : '';
-        document.getElementById('historyFilterSelect').value = "ALL"; // 필터 초기화
+        document.getElementById('historyFilterSelect').value = "ALL";
         
         cancelAccountEdit();
         cancelSalaryEdit();
@@ -574,14 +578,12 @@
         const details = mData.detailBudgets || {};
         const expenses = mData.expenses || [];
 
-        // 1. 이체 분할 자동반영 계산
         let splitSums = { sub:0, house:0, phone:0, ins:0, car:0, save:0, traffic:0, card:0, food:0, shop:0, item:0, etc:0 };
         splits.forEach(item => {
             const key = keyMapping[item.category];
             if (key) splitSums[key] += item.amount;
         });
 
-        // 2. 실시간 카테고리별 실적(지출 합계) 연산
         let actualExpenseSums = { sub:0, house:0, phone:0, ins:0, car:0, save:0, traffic:0, card:0, food:0, shop:0, item:0, etc:0 };
         expenses.forEach(item => {
             const key = keyMapping[item.category];
@@ -616,11 +618,9 @@
 
             const totalSubtotal = splitSums[key] + manualSum;
             
-            // 예산 값 업데이트
             const subtotalEl = document.getElementById(`subtotal_${key}`);
             if(subtotalEl) subtotalEl.innerText = numToCommaStr(totalSubtotal);
             
-            // 🆕 실적(지출) 값 동시 매칭
             const actualEl = document.getElementById(`actual_${key}`);
             if(actualEl) actualEl.innerText = numToCommaStr(actualExpenseSums[key]);
             
@@ -678,10 +678,8 @@
         Object.keys(keyMapping).forEach(catName => { budget += (mData.budgets[keyMapping[catName]] || 0); });
         const totalExpense = mData.expenses ? mData.expenses.reduce((sum, item) => sum + item.amount, 0) : 0;
 
-        // 대시보드 표시값 변경
         document.getElementById('budgetRatio').innerText = `${income > 0 ? Math.round((budget / income) * 100) : 0}%`;
         
-        // 🆕 [소득 - 예산 잔액] 연산 및 노출 로직 추가
         const incomeMinusBudget = income - budget;
         const incomeMinusBudgetEl = document.getElementById('displayIncomeMinusBudget');
         if(incomeMinusBudget >= 0) {
@@ -736,7 +734,7 @@
         }
 
         renderList();
-        renderBudgetFields(); // 지출 추가 시 실적 비교란 새로고침
+        renderBudgetFields(); 
         updateDashboard();
         saveCurrentMonthToGoogle();
         document.getElementById('memoInput').value = ""; amountEl.value = "";
@@ -747,7 +745,7 @@
         accountData[currentYearMonth].expenses = accountData[currentYearMonth].expenses.filter(e => e.id !== id);
         if (editingAccountId === id) cancelAccountEdit();
         renderList();
-        renderBudgetFields(); // 지출 삭제 시 실적 비교란 새로고침
+        renderBudgetFields(); 
         updateDashboard();
         saveCurrentMonthToGoogle();
     }
@@ -819,7 +817,6 @@
         }
     }
 
-    // 🆕 카테고리 필터 기능이 결합된 내역 렌더링 함수
     function renderList() {
         const listEl = document.getElementById('historyList');
         const filterValue = document.getElementById('historyFilterSelect').value;
@@ -828,12 +825,10 @@
         listEl.innerHTML = "";
         let list = accountData[currentYearMonth].expenses || [];
         
-        // 필터링 적용
         if (filterValue !== "ALL") {
             list = list.filter(item => item.category === filterValue);
         }
 
-        // 지출 타이틀 옆에 현재 필터 조건의 합계 금액 노출
         const filterTotal = list.reduce((sum, item) => sum + item.amount, 0);
         document.getElementById('historyTitle').innerText = `${month}월 지출 (${numToCommaStr(filterTotal)}원)`;
 
