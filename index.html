@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>모던 미니멀 가계부 v10.0 (구글 동기화)</title>
+    <title>모던 미니멀 가계부 v10.1 (구글 동기화)</title>
     <style>
         :root {
             --bg-color: #f4f6f8;
@@ -164,7 +164,6 @@
         .sub-budget-card { background: #f8fafc; border: 1px solid var(--border-color); border-radius: 10px; padding: 14px; }
         .sub-budget-title { font-size: 14px; font-weight: 700; color: var(--point-khaki); margin-bottom: 12px; border-left: 3px solid var(--point-khaki); padding-left: 6px; }
         
-        /* 세부 항목별 디자인 배치 추가 */
         .budget-item-block { background: #ffffff; border: 1px solid #edf2f7; border-radius: 8px; padding: 10px; margin-bottom: 10px; }
         .budget-item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 13px; font-weight: 700; color: var(--text-main); }
         .budget-item-header .subtotal-span { color: var(--point-blue); font-size: 13px; }
@@ -368,7 +367,8 @@
 </div>
 
 <script>
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw5vW0jAulZmeSCV19W2n5iVbtOU8bxgeYCa1UJD0iD9pvezXQ0bYldn3TCX1hWjUI1/exec";
+    // ⚠️ 사용자님의 주소 정보 기입 필수 부분입니다!
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx0cyQJbjJCTQPLUz8s6mLB31g6lIUVmzDC_mDR_SUqcaudykaF8Gfxw6lrUqGJHQO3/exec";
 
     let currentYearMonth = "";
     let accountData = {};
@@ -397,7 +397,7 @@
     function initPage() {
         document.getElementById('expenseDate').value = new Date().toISOString().substring(0, 10);
         setupCategorySelects();
-        buildBudgetBlocksUI(); // UI 구조 생성
+        buildBudgetBlocksUI(); 
         fetchAllDataFromGoogle();
     }
 
@@ -406,7 +406,7 @@
     }
 
     function fetchAllDataFromGoogle() {
-        if(GOOGLE_SCRIPT_URL.includes("여기에_구글")) {
+        if(!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.includes("여기에_구글")) {
             setStatus("❌ 구글 스크립트 URL을 연동해주세요.");
             return;
         }
@@ -426,7 +426,7 @@
     }
 
     function saveCurrentMonthToGoogle() {
-        if(GOOGLE_SCRIPT_URL.includes("여기에_구글")) return;
+        if(!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.includes("여기에_구글")) return;
         setStatus("📤 구글 시트에 실시간 반영 중...");
         
         const payload = {
@@ -458,20 +458,13 @@
         });
     }
 
-    // 예산 항목별 4줄 구조 UI 빌드 함수
     function buildBudgetBlocksUI() {
         const fixedContainer = document.getElementById('fixedBudgetContainer');
         const variableContainer = document.getElementById('variableBudgetContainer');
         fixedContainer.innerHTML = ''; variableContainer.innerHTML = '';
 
-        // 고정비 빌드
-        categoryGroups.fixed.forEach(cat => {
-            fixedContainer.appendChild(createItemBlockHTML(cat));
-        });
-        // 변동비 빌드
-        categoryGroups.variable.forEach(cat => {
-            variableContainer.appendChild(createItemBlockHTML(cat));
-        });
+        categoryGroups.fixed.forEach(cat => { fixedContainer.appendChild(createItemBlockHTML(cat)); });
+        categoryGroups.variable.forEach(cat => { variableContainer.appendChild(createItemBlockHTML(cat)); });
     }
 
     function createItemBlockHTML(cat) {
@@ -485,7 +478,7 @@
                 rowsHTML += `
                 <div class="budget-row-line">
                     <input type="text" class="row-memo" value="이체계산기 반영" readonly />
-                    <input type="text" id="row_amt_${key}_${i}" class="row-amount" value="0" readonly />
+                    <input type="text" id="row_amt_${key}_1" class="row-amount" value="0" readonly />
                 </div>`;
             } else {
                 rowsHTML += `
@@ -532,35 +525,32 @@
         renderSplitList();
     }
 
-    // 예산 데이터 매핑 및 자동 계산 렌더링
     function renderBudgetFields() {
         const mData = accountData[currentYearMonth];
+        if(!mData) return;
+        
         const splits = mData.splits || [];
         const details = mData.detailBudgets || {};
 
-        // 1. 이체 계산기 금액 카테고리별 합산 계산
         let splitSums = { sub:0, house:0, phone:0, ins:0, car:0, save:0, traffic:0, card:0, food:0, shop:0, item:0, etc:0 };
         splits.forEach(item => {
             const key = keyMapping[item.category];
             if (key) splitSums[key] += item.amount;
         });
 
-        // 2. 화면 각 항목 로드 및 소계 가산
         Object.keys(keyMapping).forEach(catName => {
             const key = keyMapping[catName];
             
-            // 1번째 줄 자동반영 데이터 매핑
             const firstRowAmtEl = document.getElementById(`row_amt_${key}_1`);
             if(firstRowAmtEl) firstRowAmtEl.value = numToCommaStr(splitSums[key]);
 
-            // 2~4번째 줄 기존 세부 내역 매핑
             let manualSum = 0;
             const catDetails = details[key] || [];
+            
             for(let i=2; i<=4; i++) {
                 const memoEl = document.getElementById(`row_memo_${key}_${i}`);
                 const amtEl = document.getElementById(`row_amt_${key}_${i}`);
                 
-                // 해당 배열 저장값이 있다면 불러오기
                 const savedRow = catDetails.find(d => d.rowIdx === i);
                 if(savedRow) {
                     if(memoEl) memoEl.value = savedRow.memo || '';
@@ -574,333 +564,5 @@
                 }
             }
 
-            // 소계 계산 (이체계산기 자동 반영분 + 직접 입력 3줄)
             const totalSubtotal = splitSums[key] + manualSum;
-            document.getElementById(`subtotal_${key}`).innerText = numToCommaStr(totalSubtotal);
-            
-            // 메인 예산 객체 동기화
-            mData.budgets[key] = totalSubtotal;
-        });
-
-        calculateTotalBudgetSum();
-    }
-
-    // 2~4번째 줄 상세 내역 수정 시 트리거되는 저장 함수
-    function handleDetailRowChange(key) {
-        const mData = accountData[currentYearMonth];
-        if(!mData.detailBudgets) mData.detailBudgets = {};
-        
-        mData.detailBudgets[key] = [];
-        let manualSum = 0;
-
-        for(let i=2; i<=4; i++) {
-            const memoVal = document.getElementById(`row_memo_${key}_${i}`).value.trim();
-            const amtVal = commaStrToNum(document.getElementById(`row_amt_${key}_${i}`).value);
-            
-            mData.detailBudgets[key].push({
-                rowIdx: i,
-                memo: memoVal,
-                amount: amtVal
-            });
-            manualSum += amtVal;
-        }
-
-        // 소계 재계산용 호출
-        const firstRowAmt = commaStrToNum(document.getElementById(`row_amt_${key}_1`).value);
-        const totalSubtotal = firstRowAmt + manualSum;
-        document.getElementById(`subtotal_${key}`).innerText = numToCommaStr(totalSubtotal);
-        mData.budgets[key] = totalSubtotal;
-
-        calculateTotalBudgetSum();
-        saveCurrentMonthToGoogle();
-    }
-
-    function calculateTotalBudgetSum() {
-        const mData = accountData[currentYearMonth];
-        let totalBudgetSum = 0;
-        Object.keys(keyMapping).forEach(catName => { 
-            totalBudgetSum += (mData.budgets[keyMapping[catName]] || 0); 
-        });
-        
-        document.getElementById('totalBudgetDisplayInput').value = numToCommaStr(totalBudgetSum);
-        updateDashboard();
-    }
-
-    function updateDashboard() {
-        const mData = accountData[currentYearMonth];
-        const income = mData.income || 0;
-        let budget = 0;
-        Object.keys(keyMapping).forEach(catName => { budget += (mData.budgets[keyMapping[catName]] || 0); });
-        const totalExpense = mData.expenses.reduce((sum, item) => sum + item.amount, 0);
-
-        document.getElementById('budgetRatio').innerText = `${income > 0 ? Math.round((budget / income) * 100) : 0}%`;
-        document.getElementById('displayBudget').innerText = numToCommaStr(budget) + '원';
-        document.getElementById('displayExpense').innerText = numToCommaStr(totalExpense) + '원';
-        const remain = budget - totalExpense;
-        const progressPercent = budget > 0 ? (totalExpense / budget) * 100 : 0;
-        const progressBar = document.getElementById('budgetProgress');
-        progressBar.style.width = Math.min(progressPercent, 100) + '%';
-        
-        if (progressPercent > 100) progressBar.classList.add('warning');
-        else progressBar.classList.remove('warning');
-        const remainLabel = document.getElementById('remainLabel');
-        const displayRemain = document.getElementById('displayRemain');
-
-        if (remain >= 0) {
-            remainLabel.innerText = "남은 예산";
-            remainLabel.style.color = "var(--text-main)";
-            displayRemain.innerText = numToCommaStr(remain) + '원'; displayRemain.style.color = "var(--point-blue)";
-        } else {
-            remainLabel.innerText = "예산 초과";
-            remainLabel.style.color = "var(--danger-color)";
-            displayRemain.innerText = numToCommaStr(Math.abs(remain)) + '원'; displayRemain.style.color = "var(--danger-color)";
-        }
-    }
-
-    function addOrUpdateExpense() {
-        const dateInput = document.getElementById('expenseDate').value;
-        const category = document.getElementById('categorySelect').value;
-        const memo = document.getElementById('memoInput').value.trim();
-        const amountEl = document.getElementById('amountInput');
-        const amount = commaStrToNum(amountEl.value);
-        if (!dateInput || amount <= 0) { alert("지출일과 올바른 금액을 입력해 주세요."); return; }
-        const mData = accountData[currentYearMonth];
-        if (editingAccountId !== null) {
-            const idx = mData.expenses.findIndex(e => e.id === editingAccountId);
-            if (idx !== -1) {
-                mData.expenses[idx] = { id: editingAccountId, date: dateInput, category, memo: memo || `${category} 지출`, amount };
-            }
-            cancelAccountEdit();
-        } else {
-            mData.expenses.push({ id: Date.now(), date: dateInput, category, memo: memo || `${category} 지출`, amount });
-        }
-
-        renderList();
-        updateDashboard();
-        saveCurrentMonthToGoogle();
-        document.getElementById('memoInput').value = ""; amountEl.value = "";
-    }
-
-    function deleteExpense(id) {
-        if (!confirm("이 지출 내역을 삭제하시겠습니까?")) return;
-        accountData[currentYearMonth].expenses = accountData[currentYearMonth].expenses.filter(e => e.id !== id);
-        if (editingAccountId === id) cancelAccountEdit();
-        renderList();
-        updateDashboard();
-        saveCurrentMonthToGoogle();
-    }
-
-    function addOrUpdateSplitItem() {
-        const category = document.getElementById('splitCategory').value;
-        const memo = document.getElementById('splitMemo').value.trim();
-        const bank = document.getElementById('splitBank').value;
-        const amountEl = document.getElementById('splitAmount');
-        const amount = commaStrToNum(amountEl.value);
-        if (amount <= 0) { alert("올바른 금액을 입력해 주세요."); return; }
-        const mData = accountData[currentYearMonth];
-        if (editingSalaryId !== null) {
-            const idx = mData.splits.findIndex(s => s.id === editingSalaryId);
-            if (idx !== -1) {
-                mData.splits[idx] = { id: editingSalaryId, category, memo: memo || `${category} 이체`, bank, amount };
-            }
-            cancelSalaryEdit();
-        } else {
-            mData.splits.push({ id: Date.now(), category, memo: memo || `${category} 이체`, bank, amount });
-        }
-
-        renderSplitList();
-        renderBudgetFields();
-        saveCurrentMonthToGoogle();
-        document.getElementById('splitMemo').value = ""; amountEl.value = "";
-    }
-
-    function deleteSplitItem(id) {
-        if (!confirm("이 이체 분할 항목을 삭제하시겠습니까?")) return;
-        accountData[currentYearMonth].splits = accountData[currentYearMonth].splits.filter(s => s.id !== id);
-        if (editingSalaryId === id) cancelSalaryEdit();
-        renderSplitList();
-        renderBudgetFields();
-        saveCurrentMonthToGoogle();
-    }
-
-    function copyLastMonthSplits() {
-        const [year, month] = currentYearMonth.split('-').map(Number);
-        const prevDate = new Date(year, month - 2, 1);
-        const prevYearMonth = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, '0')}`;
-        const currentData = accountData[currentYearMonth];
-        
-        if (currentData.splits && currentData.splits.length > 0) {
-            if (!confirm("현재 달에 이미 등록된 이체 내역이 존재합니다. 지난달 내역을 추가로 불러오시겠습니까?")) {
-                return;
-            }
-        }
-
-        if (accountData[prevYearMonth] && accountData[prevYearMonth].splits && accountData[prevYearMonth].splits.length > 0) {
-            const lastMonthSplits = accountData[prevYearMonth].splits;
-            
-            lastMonthSplits.forEach((item, index) => {
-                currentData.splits.push({
-                    id: Date.now() + index, 
-                    category: item.category,
-                    memo: item.memo,
-                    bank: item.bank,
-                    amount: item.amount
-                });
-            });
-
-            renderSplitList();
-            renderBudgetFields();
-            saveCurrentMonthToGoogle();
-            alert(`${lastMonthSplits.length}개의 고정 이체 항목을 지난달에서 성공적으로 복사해 왔습니다.`);
-        } else {
-            alert("이전 달( " + prevYearMonth + " )의 이체 기록을 찾을 수 없습니다.");
-        }
-    }
-
-    function renderList() {
-        const listEl = document.getElementById('historyList');
-        listEl.innerHTML = "";
-        const list = accountData[currentYearMonth].expenses || [];
-        if (list.length === 0) { listEl.innerHTML = `<li class="empty-msg">이번 달 지출 내역이 없습니다.</li>`; return; }
-
-        [...list].sort((a, b) => new Date(b.date) - new Date(a.date) || b.id - a.id).forEach(item => {
-            const li = document.createElement('li'); li.className = "history-item";
-            const displayDate = item.date.substring(5).replace('-', '/');
-            li.innerHTML = `
-                <div class="item-left">
-                    <div class="item-tag-row">
-                        <span class="item-date">${displayDate}</span>
-                        <span class="item-category">${categoryEmojis[item.category] || "❓"} ${item.category}</span>
-                    </div>
-                    <div class="item-memo">${item.memo}</div>
-                </div>
-                <div class="item-right">
-                    <span class="item-amount">${numToCommaStr(item.amount)}원</span>
-                    <button class="btn-list-action edit-btn" onclick="editExpense(${item.id})">✏️</button>
-                    <button class="btn-list-action delete-btn" onclick="deleteExpense(${item.id})">🗑️</button>
-                </div>`;
-            listEl.appendChild(li);
-        });
-    }
-
-    function renderSplitList() {
-        const listEl = document.getElementById('splitList');
-        listEl.innerHTML = "";
-        const list = accountData[currentYearMonth].splits || [];
-        let bankSums = { "KB GS Pay": 0, "KB": 0, "카뱅": 0, "농협": 0, "하나": 0 };
-        if (list.length === 0) { listEl.innerHTML = `<li class="empty-msg">등록된 분할 이체 항목이 없습니다.</li>`; updateBankSummaryDisplays(bankSums); return; }
-
-        list.forEach(item => {
-            let normalizedBank = item.bank;
-            if(normalizedBank === "카뱅") normalizedBank = "카카오뱅크";
-            if (bankSums[item.bank] !== undefined) bankSums[item.bank] += item.amount;
-            else if (bankSums[normalizedBank] !== undefined) bankSums[normalizedBank] += item.amount;
-
-            const li = document.createElement('li'); li.className = "history-item";
-            li.innerHTML = `
-                <div class="item-left">
-                    <div class="item-tag-row">
-                        <span class="item-category" style="background:#f1f5f9; color:var(--point-khaki);">${item.bank} 통장</span>
-                        <span class="item-category">${categoryEmojis[item.category] || "📦"} ${item.category}</span>
-                    </div>
-                    <div class="item-memo">${item.memo}</div>
-                </div>
-                <div class="item-right">
-                    <span class="item-amount" style="color:var(--point-khaki);">${numToCommaStr(item.amount)}원</span>
-                    <button class="btn-list-action edit-btn" onclick="editSplitItem(${item.id})">✏️</button>
-                    <button class="btn-list-action delete-btn" onclick="deleteSplitItem(${item.id})">🗑️</button>
-                </div>`;
-            listEl.appendChild(li);
-        });
-        updateBankSummaryDisplays(bankSums);
-    }
-
-    function updateBankSummaryDisplays(sums) {
-        document.getElementById('sum_kb_gs').innerText = numToCommaStr(sums["KB GS Pay"]);
-        document.getElementById('sum_kb').innerText = numToCommaStr(sums["KB"]);
-        document.getElementById('sum_kaba').innerText = numToCommaStr(sums["카카오뱅크"] || sums["카뱅"]);
-        document.getElementById('sum_nh').innerText = numToCommaStr(sums["농협"]);
-        document.getElementById('sum_hana').innerText = numToCommaStr(sums["하나"]);
-    }
-
-    function changeMonth(step) {
-        const [year, month] = currentYearMonth.split('-').map(Number);
-        const date = new Date(year, month - 1 + step, 1);
-        currentYearMonth = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-        loadMonthData();
-    }
-
-    function formatAndSaveIncome() {
-        const inputEl = document.getElementById('incomeInput');
-        formatAmountInput(inputEl);
-        accountData[currentYearMonth].income = commaStrToNum(inputEl.value);
-        updateDashboard();
-        saveCurrentMonthToGoogle();
-    }
-
-    function editExpense(id) {
-        const item = accountData[currentYearMonth].expenses.find(e => e.id === id);
-        if (!item) return;
-        editingAccountId = id;
-        document.getElementById('expenseDate').value = item.date;
-        document.getElementById('categorySelect').value = item.category;
-        document.getElementById('memoInput').value = item.memo;
-        document.getElementById('amountInput').value = numToCommaStr(item.amount);
-        document.getElementById('formTitleAccount').innerText = "지출 수정하기";
-        document.getElementById('btnSubmitAccount').innerText = "수정 완료";
-        document.getElementById('btnSubmitAccount').className = "btn-action btn-orange";
-        document.getElementById('editBannerAccount').style.display = "flex";
-    }
-
-    function cancelAccountEdit() {
-        editingAccountId = null;
-        document.getElementById('formTitleAccount').innerText = "지출 입력";
-        document.getElementById('btnSubmitAccount').innerText = "지출 등록";
-        document.getElementById('btnSubmitAccount').className = "btn-action btn-blue";
-        document.getElementById('editBannerAccount').style.display = "none";
-        document.getElementById('expenseDate').value = new Date().toISOString().substring(0, 10);
-        document.getElementById('memoInput').value = ""; document.getElementById('amountInput').value = "";
-    }
-
-    function editSplitItem(id) {
-        const item = accountData[currentYearMonth].splits.find(s => s.id === id);
-        if (!item) return;
-        editingSalaryId = id;
-        document.getElementById('splitCategory').value = item.category;
-        document.getElementById('splitMemo').value = item.memo;
-        document.getElementById('splitBank').value = item.bank;
-        document.getElementById('splitAmount').value = numToCommaStr(item.amount);
-        document.getElementById('btnSubmitSalary').innerText = "이체 항목 수정 완료";
-        document.getElementById('btnSubmitSalary').className = "btn-action btn-orange";
-        document.getElementById('editBannerSalary').style.display = "flex";
-    }
-
-    function cancelSalaryEdit() {
-        editingSalaryId = null;
-        document.getElementById('btnSubmitSalary').innerText = "이체 분할 추가";
-        document.getElementById('btnSubmitSalary').className = "btn-action btn-khaki";
-        document.getElementById('editBannerSalary').style.display = "none";
-        document.getElementById('splitMemo').value = ""; document.getElementById('splitAmount').value = "";
-    }
-
-    function switchTab(tabName) {
-        document.getElementById('tabBtnAccount').classList.remove('active');
-        document.getElementById('tabBtnSalary').classList.remove('active');
-        document.getElementById('tabContentAccount').classList.remove('active');
-        document.getElementById('tabContentSalary').classList.remove('active');
-        if (tabName === 'account') {
-            document.getElementById('tabBtnAccount').classList.add('active'); document.getElementById('tabContentAccount').classList.add('active');
-        } else {
-            document.getElementById('tabBtnSalary').classList.add('active'); document.getElementById('tabContentSalary').classList.add('active');
-        }
-    }
-
-    function numToCommaStr(num) { if (isNaN(num)) return "0"; return num.toLocaleString(); }
-    function commaStrToNum(str) { if (!str) return 0; return parseInt(str.replace(/,/g, '')) || 0; }
-    function formatAmountInput(inputEl) {
-        let num = commaStrToNum(inputEl.value);
-        inputEl.value = num === 0 ? (inputEl.value === "" ? "" : "0") : numToCommaStr(num);
-    }
-</script>
-</body>
-</html>
+            const subtotalEl = document.getElementById(`subtotal_${key
