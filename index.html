@@ -425,7 +425,10 @@
             <button id="btnSubmitSalary" class="btn-action btn-khaki" style="padding: 10px 12px; font-size:13px; margin-bottom:15px;" onclick="addOrUpdateSplitItem()">이체 분할 추가</button>
 
             <div style="margin-top: 10px; border-top: 1px dashed var(--border-color); padding-top: 15px;">
-                <div class="card-title" style="font-size: 13px; color: var(--text-muted); margin-bottom: 10px;">이번 달 분할 이체 리스트</div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <div class="card-title" style="font-size: 13px; color: var(--text-muted); margin-bottom: 0;">이번 달 분할 이체 리스트</div>
+                    <button class="btn-action btn-blue" style="width: auto; padding: 6px 10px; font-size: 11px; border-radius: 6px;" onclick="copyLastMonthSplits()">🔄 지난달 내역 불러오기</button>
+                </div>
                 <ul id="splitList" class="history-list"></ul>
             </div>
         </div>
@@ -433,7 +436,6 @@
 </div>
 
 <script>
-    // ⚠️ 중요: 아래 따옴표 안에 발급받은 배포 주소(URL)를 꼭 넣어주세요!
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyZ3Zacs25GwvmmZ86MmSP04kIEJ41lc8QErsfz00CEu88iIEaxa5PBMKzDJpLDMAa4/exec";
 
     let currentYearMonth = "";
@@ -455,7 +457,6 @@
     currentYearMonth = `${initDate.getFullYear()}-${String(initDate.getMonth() + 1).padStart(2, '0')}`;
     
     initPage();
-
     function initPage() {
         document.getElementById('expenseDate').value = new Date().toISOString().substring(0, 10);
         setupCategorySelects();
@@ -466,17 +467,13 @@
         document.getElementById('syncStatus').innerText = msg;
     }
 
-    // 구글 스프레드시트 전체 데이터 조회 (GET) - 모바일 캐시 방지 적용
     function fetchAllDataFromGoogle() {
         if(GOOGLE_SCRIPT_URL.includes("여기에_구글")) {
             setStatus("❌ 구글 스크립트 URL을 연동해주세요.");
             return;
         }
         setStatus("🔄 구글 시트 동기화 중...");
-        
-        // URL 뒤에 실시간 타임스탬프를 강제로 결합해 캐싱을 우회합니다.
         const cacheBuster = GOOGLE_SCRIPT_URL + (GOOGLE_SCRIPT_URL.includes("?") ? "&" : "?") + "_ts=" + new Date().getTime();
-        
         fetch(cacheBuster)
             .then(res => res.json())
             .then(data => {
@@ -490,7 +487,6 @@
             });
     }
 
-    // 구글 스프레드시트에 저장 (POST) - no-cors 제거 및 text/plain 변환 안정화
     function saveCurrentMonthToGoogle() {
         if(GOOGLE_SCRIPT_URL.includes("여기에_구글")) return;
         setStatus("📤 구글 시트에 실시간 반영 중...");
@@ -499,8 +495,6 @@
             ym: currentYearMonth,
             data: accountData[currentYearMonth]
         };
-
-        // mode: "no-cors"를 해제하여 모바일 누락 현상을 완전히 차단합니다.
         fetch(GOOGLE_SCRIPT_URL, {
             method: "POST",
             headers: { "Content-Type": "text/plain" }, 
@@ -635,7 +629,8 @@
         const memo = document.getElementById('memoInput').value.trim();
         const amountEl = document.getElementById('amountInput');
         const amount = commaStrToNum(amountEl.value);
-        if (!dateInput || amount <= 0) { alert("지출일과 올바른 금액을 입력해 주세요."); return; }
+        if (!dateInput || amount <= 0) { alert("지출일과 올바른 금액을 입력해 주세요."); return;
+        }
         const mData = accountData[currentYearMonth];
         if (editingAccountId !== null) {
             const idx = mData.expenses.findIndex(e => e.id === editingAccountId);
@@ -668,7 +663,8 @@
         const bank = document.getElementById('splitBank').value;
         const amountEl = document.getElementById('splitAmount');
         const amount = commaStrToNum(amountEl.value);
-        if (amount <= 0) { alert("올바른 금액을 입력해 주세요."); return; }
+        if (amount <= 0) { alert("올바른 금액을 입력해 주세요."); return;
+        }
         const mData = accountData[currentYearMonth];
         if (editingSalaryId !== null) {
             const idx = mData.splits.findIndex(s => s.id === editingSalaryId);
@@ -695,6 +691,47 @@
         saveCurrentMonthToGoogle();
     }
 
+    // ⭐️ [신규 기능] 지난달 이체 내역 복사 함수 구현
+    function copyLastMonthSplits() {
+        const [year, month] = currentYearMonth.split('-').map(Number);
+        // 전 달 계산 (1월인 경우 전년도 12월로 유기적 변환)
+        const prevDate = new Date(year, month - 2, 1);
+        const prevYearMonth = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, '0')}`;
+
+        const currentData = accountData[currentYearMonth];
+        
+        // 현재 달에 이미 내역이 존재하면 덮어쓰기 방지 얼럿 작동
+        if (currentData.splits && currentData.splits.length > 0) {
+            if (!confirm("현재 달에 이미 등록된 이체 내역이 존재합니다. 지난달 내역을 추가로 불러오시겠습니까?")) {
+                return;
+            }
+        }
+
+        // 지난달 데이터 검색 및 유효성 판단
+        if (accountData[prevYearMonth] && accountData[prevYearMonth].splits && accountData[prevYearMonth].splits.length > 0) {
+            const lastMonthSplits = accountData[prevYearMonth].splits;
+            
+            // 데이터 ID값을 새로 고정해 고유 식별값 재생성 후 푸시
+            lastMonthSplits.forEach((item, index) => {
+                currentData.splits.push({
+                    id: Date.now() + index, 
+                    category: item.category,
+                    memo: item.memo,
+                    bank: item.bank,
+                    amount: item.amount
+                });
+            });
+
+            // 화면 새로고침 및 실시간 구글 저장
+            renderSplitList();
+            renderBudgetFields();
+            saveCurrentMonthToGoogle();
+            alert(`${lastMonthSplits.length}개의 고정 이체 항목을 지난달에서 성공적으로 복사해 왔습니다.`);
+        } else {
+            alert("이전 달( " + prevYearMonth + " )의 이체 기록을 찾을 수 없습니다.");
+        }
+    }
+
     function insertAllBudgetedCosts() {
         const mData = accountData[currentYearMonth];
         let splitSums = { sub:0, house:0, phone:0, ins:0, car:0, save:0, traffic:0, card:0, food:0, shop:0, item:0, etc:0 };
@@ -708,7 +745,8 @@
 
             if (totalBudgetAmount > 0) {
                 if (!mData.expenses.some(e => e.category === catName && e.memo === `[예산] ${catName}`)) {
-                    mData.expenses.push({ id: Date.now() + addedCount, date: todayStr, category: catName, memo: `[예산] ${catName}`, amount: totalBudgetAmount });
+                    mData.expenses.push({ 
+                        id: Date.now() + addedCount, date: todayStr, category: catName, memo: `[예산] ${catName}`, amount: totalBudgetAmount });
                     addedCount++;
                 }
             }
@@ -725,7 +763,8 @@
         const listEl = document.getElementById('historyList');
         listEl.innerHTML = "";
         const list = accountData[currentYearMonth].expenses || [];
-        if (list.length === 0) { listEl.innerHTML = `<li class="empty-msg">이번 달 지출 내역이 없습니다.</li>`; return; }
+        if (list.length === 0) { listEl.innerHTML = `<li class="empty-msg">이번 달 지출 내역이 없습니다.</li>`;
+        return; }
 
         [...list].sort((a, b) => new Date(b.date) - new Date(a.date) || b.id - a.id).forEach(item => {
             const li = document.createElement('li'); li.className = "history-item";
@@ -752,7 +791,8 @@
         listEl.innerHTML = "";
         const list = accountData[currentYearMonth].splits || [];
         let bankSums = { "KB GS Pay": 0, "KB": 0, "카뱅": 0, "농협": 0, "하나": 0 };
-        if (list.length === 0) { listEl.innerHTML = `<li class="empty-msg">등록된 분할 이체 항목이 없습니다.</li>`; updateBankSummaryDisplays(bankSums); return; }
+        if (list.length === 0) { listEl.innerHTML = `<li class="empty-msg">등록된 분할 이체 항목이 없습니다.</li>`; updateBankSummaryDisplays(bankSums); return;
+        }
 
         list.forEach(item => {
             if (bankSums[item.bank] !== undefined) bankSums[item.bank] += item.amount;
@@ -855,6 +895,7 @@
         }
     }
 
+    // 유틸리티 함수들
     function numToCommaStr(num) { if (isNaN(num)) return "0"; return num.toLocaleString(); }
     function commaStrToNum(str) { if (!str) return 0; return parseInt(str.replace(/,/g, '')) || 0; }
     function formatAmountInput(inputEl) {
