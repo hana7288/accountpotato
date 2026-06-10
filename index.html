@@ -117,8 +117,10 @@
             box-shadow: 0 -2px 5px rgba(0,0,0,0.04);
         }
 
-        .tab-content { display: none; background: transparent; }
-        .tab-content.active { display: block; }
+        .tab-content { display: none;
+            background: transparent; }
+        .tab-content.active { display: block;
+        }
 
         .card {
             background: var(--card-bg);
@@ -129,8 +131,10 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.01);
         }
 
-        .tab-content .card:not(:first-child) { border-radius: 14px; }
-        .card-title { font-size: 15px; font-weight: 700; color: var(--point-gray); margin-bottom: 16px; }
+        .tab-content .card:not(:first-child) { border-radius: 14px;
+        }
+        .card-title { font-size: 15px; font-weight: 700; color: var(--point-gray); margin-bottom: 16px;
+        }
 
         .income-budget-grid {
             display: grid;
@@ -139,8 +143,10 @@
             margin-bottom: 16px;
         }
 
-        .input-box { display: flex; flex-direction: column; }
-        .input-box label { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; font-weight: 600; }
+        .input-box { display: flex;
+            flex-direction: column; }
+        .input-box label { font-size: 12px; color: var(--text-muted); margin-bottom: 6px;
+            font-weight: 600; }
         .input-box input {
             border: 1px solid var(--border-color);
             border-radius: 8px;
@@ -150,63 +156,112 @@
             outline: none;
             width: 100%;
         }
-        .input-box input:focus { border-color: var(--point-blue); }
+        .input-box input:focus { border-color: var(--point-blue);
+        }
 
-        .status-summary { background: #f8fafc; border-radius: 10px; padding: 14px; }
-        .status-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
-        .status-row:last-child { margin-bottom: 0; }
-        .status-row .val { font-weight: 700; }
+        .status-summary { background: #f8fafc; border-radius: 10px; padding: 14px;
+        }
+        .status-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px;
+        }
+        .status-row:last-child { margin-bottom: 0;
+        }
+        .status-row .val { font-weight: 700;
+        }
 
-        .progress-bar-container { background: #e2e8f0; border-radius: 6px; height: 8px; width: 100%; margin: 10px 0; overflow: hidden; }
-        .progress-bar { background: var(--point-blue); height: 100%; width: 0%; transition: width 0.3s ease; }
-        .progress-bar.warning { background: var(--danger-color); }
+        .progress-bar-container { background: #e2e8f0; border-radius: 6px; height: 8px; width: 100%;
+            margin: 10px 0; overflow: hidden; }
+        .progress-bar { background: var(--point-blue); height: 100%;
+            width: 0%; transition: width 0.3s ease; }
+        .progress-bar.warning { background: var(--danger-color);
+        }
 
-        .budget-box-container { display: flex; flex-direction: column; gap: 14px; margin-bottom: 16px; }
-        .sub-budget-card { background: #f8fafc; border: 1px solid var(--border-color); border-radius: 10px; padding: 14px; }
-        .sub-budget-title { font-size: 13px; font-weight: 700; color: var(--point-khaki); margin-bottom: 10px; border-left: 3px solid var(--point-khaki); padding-left: 6px; }
-        .budget-inputs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .budget-input-item { display: flex; align-items: center; font-size: 12px; }
-        .budget-input-item span { width: 85px; color: var(--text-main); font-weight: 600; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; }
+        .budget-box-container { display: flex; flex-direction: column; gap: 14px; margin-bottom: 16px;
+        }
+        .sub-budget-card { background: #f8fafc; border: 1px solid var(--border-color); border-radius: 10px; padding: 14px;
+        }
+        .sub-budget-title { font-size: 13px; font-weight: 700; color: var(--point-khaki); margin-bottom: 10px;
+            border-left: 3px solid var(--point-khaki); padding-left: 6px; }
+        .budget-inputs-grid { display: grid;
+            grid-template-columns: 1fr 1fr; gap: 10px; }
+        .budget-input-item { display: flex; align-items: center;
+            font-size: 12px; }
+        .budget-input-item span { width: 85px; color: var(--text-main); font-weight: 600;
+            text-overflow: ellipsis; white-space: nowrap; overflow: hidden; }
         .budget-input-item input {
-            width: calc(100% - 85px); padding: 8px; border: 1px solid var(--border-color); border-radius: 6px;
+            width: calc(100% - 85px);
+            padding: 8px; border: 1px solid var(--border-color); border-radius: 6px;
             font-size: 13px; font-weight: 600; text-align: right; outline: none; background: #fff;
         }
-        .budget-input-item input[readonly] { background-color: #f1f5f9; color: var(--text-muted); cursor: not-allowed; }
+        .budget-input-item input[readonly] { background-color: #f1f5f9; color: var(--text-muted); cursor: not-allowed;
+        }
 
-        .btn-action { width: 100%; padding: 12px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; text-align: center; }
-        .btn-khaki { background-color: var(--point-khaki); color: white; }
-        .btn-blue { background-color: var(--point-blue); color: white; }
-        .btn-orange { background-color: var(--edit-color); color: white; }
+        .btn-action { width: 100%; padding: 12px; border: none; border-radius: 8px; font-size: 14px;
+            font-weight: 600; cursor: pointer; text-align: center; }
+        .btn-khaki { background-color: var(--point-khaki); color: white;
+        }
+        .btn-blue { background-color: var(--point-blue); color: white;
+        }
+        .btn-orange { background-color: var(--edit-color); color: white;
+        }
 
-        .form-group { margin-bottom: 12px; }
-        .form-group label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; color: var(--text-main); }
-        .form-control { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 12px; font-weight: 600; color: var(--text-main); outline: none; background-color: #fff; }
-        .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .form-row-4 { display: grid; grid-template-columns: 1fr 1.1fr 1fr 1fr; gap: 6px; }
+        .form-group { margin-bottom: 12px;
+        }
+        .form-group label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px;
+            color: var(--text-main); }
+        .form-control { width: 100%; padding: 10px; border: 1px solid var(--border-color);
+            border-radius: 8px; font-size: 12px; font-weight: 600; color: var(--text-main); outline: none; background-color: #fff;
+        }
+        .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+        }
+        .form-row-4 { display: grid; grid-template-columns: 1fr 1.1fr 1fr 1fr; gap: 6px;
+        }
 
-        .history-list { list-style: none; }
-        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f5f9; }
-        .history-item:last-child { border-bottom: none; }
-        .item-left { display: flex; flex-direction: column; min-width: 0; flex: 1; }
-        .item-tag-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-        .item-date { font-size: 12px; font-weight: 600; color: var(--text-muted); }
-        .item-category { font-size: 11px; background: #e2e8f0; color: #334155; padding: 2px 5px; border-radius: 4px; font-weight: 600; }
-        .item-memo { font-size: 12px; font-weight: 600; margin-top: 4px; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .item-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
-        .item-amount { font-size: 12px; font-weight: 700; color: var(--text-main); }
+        .history-list { list-style: none;
+        }
+        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0;
+            border-bottom: 1px solid #f1f5f9; }
+        .history-item:last-child { border-bottom: none;
+        }
+        .item-left { display: flex; flex-direction: column; min-width: 0; flex: 1;
+        }
+        .item-tag-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+        }
+        .item-date { font-size: 12px; font-weight: 600; color: var(--text-muted);
+        }
+        .item-category { font-size: 11px; background: #e2e8f0; color: #334155; padding: 2px 5px;
+            border-radius: 4px; font-weight: 600; }
+        .item-memo { font-size: 12px; font-weight: 600; margin-top: 4px;
+            color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .item-right { display: flex;
+            align-items: center; gap: 6px; flex-shrink: 0; }
+        .item-amount { font-size: 12px; font-weight: 700;
+            color: var(--text-main); }
         
-        .btn-list-action { background: none; border: none; color: #cbd5e1; cursor: pointer; font-size: 13px; padding: 4px; }
-        .btn-list-action.edit-btn:hover { color: var(--edit-color); }
-        .btn-list-action.delete-btn:hover { color: var(--danger-color); }
-        .empty-msg { text-align: center; color: var(--text-muted); font-size: 12px; font-weight: 600; padding: 20px 0; }
+        .btn-list-action { background: none;
+            border: none; color: #cbd5e1; cursor: pointer; font-size: 13px; padding: 4px;
+        }
+        .btn-list-action.edit-btn:hover { color: var(--edit-color);
+        }
+        .btn-list-action.delete-btn:hover { color: var(--danger-color);
+        }
+        .empty-msg { text-align: center; color: var(--text-muted); font-size: 12px; font-weight: 600;
+            padding: 20px 0; }
 
-        .bank-summary-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 8px; background: #f8fafc; padding: 12px; border-radius: 10px; margin-bottom: 14px; }
-        .bank-summary-card { background: #fff; border: 1px solid var(--border-color); border-radius: 6px; padding: 8px; text-align: center; }
-        .bank-name-lbl { font-size: 11px; font-weight: bold; color: var(--text-muted); margin-bottom: 4px;}
-        .bank-total-val { font-size: 12px; font-weight: 700; color: var(--point-blue); }
+        .bank-summary-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+            gap: 8px; background: #f8fafc; padding: 12px; border-radius: 10px; margin-bottom: 14px;
+        }
+        .bank-summary-card { background: #fff; border: 1px solid var(--border-color); border-radius: 6px; padding: 8px;
+            text-align: center; }
+        .bank-name-lbl { font-size: 11px; font-weight: bold; color: var(--text-muted);
+            margin-bottom: 4px;}
+        .bank-total-val { font-size: 12px; font-weight: 700; color: var(--point-blue);
+        }
 
-        .edit-banner { display: none; background-color: #fffbeb; border: 1px solid #fde68a; color: #b45309; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; margin-bottom: 10px; justify-content: space-between; align-items: center; }
-        .edit-banner button { background: none; border: none; color: #b45309; font-weight: bold; cursor: pointer; font-size: 12px; }
+        .edit-banner { display: none; background-color: #fffbeb; border: 1px solid #fde68a; color: #b45309;
+            padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; margin-bottom: 10px; justify-content: space-between; align-items: center;
+        }
+        .edit-banner button { background: none; border: none; color: #b45309; font-weight: bold;
+            cursor: pointer; font-size: 12px; }
     </style>
 </head>
 <body>
@@ -228,7 +283,6 @@
         <button id="tabBtnSalary" class="tab-btn" onclick="switchTab('salary')">💰 이체 계산기</button>
     </div>
 
-    <!-- TAB 1: 가계부 -->
     <div id="tabContentAccount" class="tab-content active">
         <div class="card">
             <div class="card-title">이번 달 자금 종합 현황</div>
@@ -328,7 +382,6 @@
         </div>
     </div>
 
-    <!-- TAB 2: 이체 계산기 -->
     <div id="tabContentSalary" class="tab-content">
         <div class="card">
             <div class="card-title" style="color: var(--point-blue);">💰 통장별 이체 금액 계산기</div>
@@ -380,7 +433,7 @@
 </div>
 
 <script>
-    // ⚠️ 중요: 1단계 완료 후 발급받은 배포 주소(URL)를 아래 따옴표 안에 꼭 넣어주세요!
+    // ⚠️ 중요: 아래 따옴표 안에 발급받은 배포 주소(URL)를 꼭 넣어주세요!
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwYemvOQ1j1JfOeLD1o0UshnemJNp1e2YPdY_S2GlFA9s9KIGkPETKRJZbLEQjfTcuT/exec";
 
     let currentYearMonth = "";
@@ -396,8 +449,8 @@
         "정기구독": "sub", "집": "house", "통신비": "phone", "보험료": "ins", "자동차": "car", "적금": "save",
         "교통비": "traffic", "카드": "card", "식비": "food", "쇼핑": "shop", "생필품": "item", "기타": "etc"
     };
+ 
     const defaultBudgets = { sub: 0, house: 0, phone: 0, ins: 0, car: 0, save: 0, traffic: 0, card: 0, food: 0, shop: 0, item: 0, etc: 0 };
-
     const initDate = new Date();
     currentYearMonth = `${initDate.getFullYear()}-${String(initDate.getMonth() + 1).padStart(2, '0')}`;
     
@@ -413,14 +466,18 @@
         document.getElementById('syncStatus').innerText = msg;
     }
 
-    // 구글 스프레드시트 전체 데이터 조회 (GET)
+    // 구글 스프레드시트 전체 데이터 조회 (GET) - 모바일 캐시 방지 적용
     function fetchAllDataFromGoogle() {
         if(GOOGLE_SCRIPT_URL.includes("여기에_구글")) {
             setStatus("❌ 구글 스크립트 URL을 연동해주세요.");
             return;
         }
         setStatus("🔄 구글 시트 동기화 중...");
-        fetch(GOOGLE_SCRIPT_URL)
+        
+        // URL 뒤에 실시간 타임스탬프를 강제로 결합해 캐싱을 우회합니다.
+        const cacheBuster = GOOGLE_SCRIPT_URL + (GOOGLE_SCRIPT_URL.includes("?") ? "&" : "?") + "_ts=" + new Date().getTime();
+        
+        fetch(cacheBuster)
             .then(res => res.json())
             .then(data => {
                 accountData = data;
@@ -433,7 +490,7 @@
             });
     }
 
-    // 구글 스프레드시트에 저장 (POST)
+    // 구글 스프레드시트에 저장 (POST) - no-cors 제거 및 text/plain 변환 안정화
     function saveCurrentMonthToGoogle() {
         if(GOOGLE_SCRIPT_URL.includes("여기에_구글")) return;
         setStatus("📤 구글 시트에 실시간 반영 중...");
@@ -443,13 +500,13 @@
             data: accountData[currentYearMonth]
         };
 
+        // mode: "no-cors"를 해제하여 모바일 누락 현상을 완전히 차단합니다.
         fetch(GOOGLE_SCRIPT_URL, {
             method: "POST",
-            mode: "no-cors", // Apps Script CORS 우회
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "text/plain" }, 
             body: JSON.stringify(payload)
         })
-        .then(() => {
+        .then(res => {
             setStatus("✅ 클라우드 저장 완료");
         })
         .catch(err => {
@@ -502,7 +559,6 @@
             const key = keyMapping[item.category];
             if (key) splitSums[key] += item.amount;
         });
-
         Object.keys(keyMapping).forEach(catName => {
             const key = keyMapping[catName];
             const el = document.getElementById(`b_${key}`);
@@ -520,7 +576,6 @@
             const key = keyMapping[item.category];
             if (key) splitSums[key] += item.amount;
         });
-
         Object.keys(keyMapping).forEach(catName => {
             const key = keyMapping[catName];
             const el = document.getElementById(`b_${key}`);
@@ -528,7 +583,6 @@
             let pureManualVal = commaStrToNum(el.value) - splitSums[key];
             mData.budgets[key] = pureManualVal < 0 ? 0 : pureManualVal;
         });
-
         calculateTotalBudgetSum();
         saveCurrentMonthToGoogle();
     }
@@ -554,7 +608,6 @@
         document.getElementById('budgetRatio').innerText = `${income > 0 ? Math.round((budget / income) * 100) : 0}%`;
         document.getElementById('displayBudget').innerText = numToCommaStr(budget) + '원';
         document.getElementById('displayExpense').innerText = numToCommaStr(totalExpense) + '원';
-
         const remain = budget - totalExpense;
         const progressPercent = budget > 0 ? (totalExpense / budget) * 100 : 0;
         const progressBar = document.getElementById('budgetProgress');
@@ -562,15 +615,16 @@
         
         if (progressPercent > 100) progressBar.classList.add('warning');
         else progressBar.classList.remove('warning');
-
         const remainLabel = document.getElementById('remainLabel');
         const displayRemain = document.getElementById('displayRemain');
 
         if (remain >= 0) {
-            remainLabel.innerText = "남은 예산"; remainLabel.style.color = "var(--text-main)";
+            remainLabel.innerText = "남은 예산";
+            remainLabel.style.color = "var(--text-main)";
             displayRemain.innerText = numToCommaStr(remain) + '원'; displayRemain.style.color = "var(--point-blue)";
         } else {
-            remainLabel.innerText = "예산 초과"; remainLabel.style.color = "var(--danger-color)";
+            remainLabel.innerText = "예산 초과";
+            remainLabel.style.color = "var(--danger-color)";
             displayRemain.innerText = numToCommaStr(Math.abs(remain)) + '원'; displayRemain.style.color = "var(--danger-color)";
         }
     }
@@ -581,10 +635,8 @@
         const memo = document.getElementById('memoInput').value.trim();
         const amountEl = document.getElementById('amountInput');
         const amount = commaStrToNum(amountEl.value);
-
         if (!dateInput || amount <= 0) { alert("지출일과 올바른 금액을 입력해 주세요."); return; }
         const mData = accountData[currentYearMonth];
-
         if (editingAccountId !== null) {
             const idx = mData.expenses.findIndex(e => e.id === editingAccountId);
             if (idx !== -1) {
@@ -616,10 +668,8 @@
         const bank = document.getElementById('splitBank').value;
         const amountEl = document.getElementById('splitAmount');
         const amount = commaStrToNum(amountEl.value);
-
         if (amount <= 0) { alert("올바른 금액을 입력해 주세요."); return; }
         const mData = accountData[currentYearMonth];
-
         if (editingSalaryId !== null) {
             const idx = mData.splits.findIndex(s => s.id === editingSalaryId);
             if (idx !== -1) {
@@ -652,7 +702,6 @@
 
         let addedCount = 0;
         const todayStr = new Date().toISOString().substring(0, 10);
-
         Object.keys(keyMapping).forEach(catName => {
             const key = keyMapping[catName];
             const totalBudgetAmount = (mData.budgets[key] || 0) + splitSums[key];
@@ -664,7 +713,6 @@
                 }
             }
         });
-
         if (addedCount > 0) {
             alert(`${addedCount}개의 예산 항목이 지출 내역에 등록되었습니다.`);
             renderList(); updateDashboard(); saveCurrentMonthToGoogle();
@@ -674,7 +722,8 @@
     }
 
     function renderList() {
-        const listEl = document.getElementById('historyList'); listEl.innerHTML = "";
+        const listEl = document.getElementById('historyList');
+        listEl.innerHTML = "";
         const list = accountData[currentYearMonth].expenses || [];
         if (list.length === 0) { listEl.innerHTML = `<li class="empty-msg">이번 달 지출 내역이 없습니다.</li>`; return; }
 
@@ -699,10 +748,10 @@
     }
 
     function renderSplitList() {
-        const listEl = document.getElementById('splitList'); listEl.innerHTML = "";
+        const listEl = document.getElementById('splitList');
+        listEl.innerHTML = "";
         const list = accountData[currentYearMonth].splits || [];
         let bankSums = { "KB GS Pay": 0, "KB": 0, "카뱅": 0, "농협": 0, "하나": 0 };
-
         if (list.length === 0) { listEl.innerHTML = `<li class="empty-msg">등록된 분할 이체 항목이 없습니다.</li>`; updateBankSummaryDisplays(bankSums); return; }
 
         list.forEach(item => {
