@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>모던 미니멀 가계부 v12.1 (강제 양방향 동기화 보강형)</title>
+    <title>모던 미니멀 가계부 v12.2 (구글 동기화 완료형)</title>
     <style>
         :root {
             --bg-color: #f4f6f8;
@@ -30,7 +30,7 @@
         body {
             background-color: var(--bg-color);
             color: var(--text-main);
-            padding: 20px 8px 60px 8px;
+            padding: 20px 12px 60px 12px;
             display: flex;
             justify-content: center;
         }
@@ -38,7 +38,6 @@
         .container {
             width: 100%;
             max-width: 540px;
-            min-width: 0;
         }
 
         header {
@@ -118,34 +117,28 @@
         }
 
         .tab-content { display: none; background: transparent; }
-        .tab-content.active { display: block; min-width: 0; }
+        .tab-content.active { display: block; }
 
         .card {
             background: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 0 0 14px 14px;
-            padding: 16px;
+            padding: 20px;
             margin-bottom: 16px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.01);
-            min-width: 0;
-            overflow: hidden;
         }
 
         .tab-content .card:not(:first-child) { border-radius: 14px; }
         .card-title { font-size: 15px; font-weight: 700; color: var(--point-gray); margin-bottom: 16px; }
-        
-        .history-title-area { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px; }
-        .history-title-area .card-title { margin-bottom: 0; }
-        .filter-select { padding: 4px 8px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 12px; font-weight: 600; color: var(--text-main); outline: none; background: #fff; }
 
         .income-budget-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
+            gap: 12px;
             margin-bottom: 16px;
         }
 
-        .input-box { display: flex; flex-direction: column; min-width: 0; }
+        .input-box { display: flex; flex-direction: column; }
         .input-box label { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; font-weight: 600; }
         .input-box input {
             border: 1px solid var(--border-color);
@@ -167,49 +160,32 @@
         .progress-bar { background: var(--point-blue); height: 100%; width: 0%; transition: width 0.3s ease; }
         .progress-bar.warning { background: var(--danger-color); }
 
-        .budget-box-container { display: flex; flex-direction: column; gap: 14px; margin-bottom: 16px; min-width: 0; }
-        .sub-budget-card { background: #f8fafc; border: 1px solid var(--border-color); border-radius: 10px; padding: 10px 8px; min-width: 0; }
-        .sub-budget-title { font-size: 13px; font-weight: 700; color: var(--point-khaki); margin-bottom: 8px; border-left: 3px solid var(--point-khaki); padding-left: 6px; }
-        
-        .budget-inputs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; min-width: 0; }
-        
-        .budget-input-item { 
-            display: flex; 
-            flex-direction: column; 
-            background: #ffffff; 
-            border: 1px solid #edf2f7; 
-            border-radius: 8px; 
-            padding: 6px;
-            min-width: 0;
-            overflow: hidden;
+        .budget-box-container { display: flex; flex-direction: column; gap: 14px; margin-bottom: 16px; }
+        .sub-budget-card { background: #f8fafc; border: 1px solid var(--border-color); border-radius: 10px; padding: 14px; }
+        .sub-budget-title { font-size: 13px; font-weight: 700; color: var(--point-khaki); margin-bottom: 10px; border-left: 3px solid var(--point-khaki); padding-left: 6px; }
+        .budget-inputs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .budget-input-item { display: flex; align-items: center; font-size: 12px; }
+        .budget-input-item span { width: 85px; color: var(--text-main); font-weight: 600; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; }
+        .budget-input-item input {
+            width: calc(100% - 85px);
+            padding: 8px; border: 1px solid var(--border-color); border-radius: 6px;
+            font-size: 13px; font-weight: 600; text-align: right; outline: none; background: #fff;
         }
-        .budget-item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; min-width: 0; gap: 4px; }
-        .budget-item-header span { font-size: 11px; color: var(--text-main); font-weight: 700; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; }
-        
-        .budget-item-header .subtotal-span { font-size: 10.5px; color: var(--text-muted); font-weight: 600; flex-shrink: 0; text-align: right; }
-        .budget-item-header .subtotal-span .b-val { color: var(--point-blue); font-weight: 700; }
-        .budget-item-header .subtotal-span .e-val { color: var(--point-khaki); font-weight: 700; }
-
-        .budget-rows-container { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-        .budget-row-line { display: flex; gap: 3px; align-items: center; min-width: 0; width: 100%; }
-        
-        .budget-row-line input.row-memo { flex: 1.4; padding: 2px 4px; font-size: 10px; border: 1px solid #e2e8f0; border-radius: 4px; outline: none; font-weight: 600; background: #fff; color: var(--text-main); min-width: 0; text-overflow: ellipsis; }
-        .budget-row-line input.row-amount { flex: 1; padding: 2px 4px; font-size: 10px; border: 1px solid #e2e8f0; border-radius: 4px; text-align: right; outline: none; font-weight: 700; background: #fff; color: var(--text-main); min-width: 0; }
-        .budget-row-line input[readonly] { background-color: #f1f5f9; color: var(--text-muted); cursor: not-allowed; font-size: 9.5px; letter-spacing: -0.5px; }
+        .budget-input-item input[readonly] { background-color: #f1f5f9; color: var(--text-muted); cursor: not-allowed; }
 
         .btn-action { width: 100%; padding: 12px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; text-align: center; }
         .btn-khaki { background-color: var(--point-khaki); color: white; }
         .btn-blue { background-color: var(--point-blue); color: white; }
         .btn-orange { background-color: var(--edit-color); color: white; }
 
-        .form-group { margin-bottom: 12px; min-width: 0; }
+        .form-group { margin-bottom: 12px; }
         .form-group label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; color: var(--text-main); }
         .form-control { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 12px; font-weight: 600; color: var(--text-main); outline: none; background-color: #fff; }
         .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .form-row-4 { display: grid; grid-template-columns: 1fr 1.1fr 1fr 1fr; gap: 6px; }
 
         .history-list { list-style: none; }
-        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f5f9; min-width: 0; }
+        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f5f9; }
         .history-item:last-child { border-bottom: none; }
         .item-left { display: flex; flex-direction: column; min-width: 0; flex: 1; }
         .item-tag-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
@@ -271,10 +247,6 @@
                     <span class="lbl" style="color: var(--text-muted);">소득 대비 예산 비중</span>
                     <span class="val" id="budgetRatio">0%</span>
                 </div>
-                <div class="status-row" style="border-bottom: 1px dashed #e2e8f0; padding-bottom: 6px; margin-bottom: 6px;">
-                    <span class="lbl" style="color: var(--point-gray); font-weight:600;">예산 편성 후 소득 잔액</span>
-                    <span class="val" id="displayIncomeMinusBudget" style="color: #2563eb;">0원</span>
-                </div>
                 <div class="status-row">
                     <span class="lbl">당월 총 예산</span>
                     <span class="val" id="displayBudget">0원</span>
@@ -294,15 +266,29 @@
         </div>
 
         <div class="card">
-            <div class="card-title">항목별 예산 계획 및 상세 내역</div>
+            <div class="card-title">항목별 예산 계획</div>
             <div class="budget-box-container">
                 <div class="sub-budget-card">
                     <div class="sub-budget-title">[고정비]</div>
-                    <div id="fixedBudgetContainer" class="budget-inputs-grid"></div>
+                    <div class="budget-inputs-grid">
+                        <div class="budget-input-item"><span>🍿 정기구독</span><input type="text" id="b_sub" placeholder="0" onchange="handleBudgetChange()"></div>
+                        <div class="budget-input-item"><span>🏠 집</span><input type="text" id="b_house" placeholder="0" onchange="handleBudgetChange()"></div>
+                        <div class="budget-input-item"><span>📱 통신비</span><input type="text" id="b_phone" placeholder="0" onchange="handleBudgetChange()"></div>
+                        <div class="budget-input-item"><span>🏥 보험료</span><input type="text" id="b_ins" placeholder="0" onchange="handleBudgetChange()"></div>
+                        <div class="budget-input-item"><span>🚗 자동차</span><input type="text" id="b_car" placeholder="0" onchange="handleBudgetChange()"></div>
+                        <div class="budget-input-item"><span>🐷 적금</span><input type="text" id="b_save" placeholder="0" onchange="handleBudgetChange()"></div>
+                    </div>
                 </div>
                 <div class="sub-budget-card">
                     <div class="sub-budget-title">[변동비]</div>
-                    <div id="variableBudgetContainer" class="budget-inputs-grid"></div>
+                    <div class="budget-inputs-grid">
+                        <div class="budget-input-item"><span>🚌 교통비</span><input type="text" id="b_traffic" placeholder="0" onchange="handleBudgetChange()"></div>
+                        <div class="budget-input-item"><span>💳 카드</span><input type="text" id="b_card" placeholder="0" onchange="handleBudgetChange()"></div>
+                        <div class="budget-input-item"><span>🍔 식비</span><input type="text" id="b_food" placeholder="0" onchange="handleBudgetChange()"></div>
+                        <div class="budget-input-item"><span>🛍️ 쇼핑</span><input type="text" id="b_shop" placeholder="0" onchange="handleBudgetChange()"></div>
+                        <div class="budget-input-item"><span>🧻 생필품</span><input type="text" id="b_item" placeholder="0" onchange="handleBudgetChange()"></div>
+                        <div class="budget-input-item"><span>📦 기타</span><input type="text" id="b_etc" placeholder="0" onchange="handleBudgetChange()"></div>
+                    </div>
                 </div>
             </div>
             <button class="btn-action btn-khaki" onclick="insertAllBudgetedCosts()">당월 예산 일괄 등록</button>
@@ -336,12 +322,7 @@
         </div>
 
         <div class="card">
-            <div class="history-title-area">
-                <div class="card-title" id="historyTitle">지출 내역</div>
-                <select id="historyFilterSelect" class="filter-select" onchange="renderList()">
-                    <option value="ALL">🔍 전체보기</option>
-                </select>
-            </div>
+            <div class="card-title" id="historyTitle">지출 내역</div>
             <ul id="historyList" class="history-list"></ul>
         </div>
     </div>
@@ -397,24 +378,18 @@
 </div>
 
 <script>
-    // ⚠️ 아래 주소 부분에 본인의 구글 웹앱 URL(AKfycby... 주소)을 꼭 정확히 복사해 넣어주세요!
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz0fr1UgP4ucprLBaYM0veJZ3NGuuwG0Of1GR8ASNmTQ0Mz_DLfEOc1aa9XM8DAJIDf/exec";
+    // ⚠️ [필수 수정] 아래 따옴표 안에 발급받은 본인의 구글 웹앱 배포 주소(URL)를 정확히 붙여넣어 주세요!
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx72atqoDYl2JhaE9iLw7-9jZXEiYML8Q4hgg89WREuz-OoxGFYTAyzvrNPirj8FGOJ/exec";
 
     let currentYearMonth = "";
     let accountData = {};
     let editingAccountId = null;
     let editingSalaryId = null;
 
-    const categoryGroups = {
-        fixed: ["정기구독", "집", "통신비", "보험료", "자동차", "적금"],
-        variable: ["교통비", "카드", "식비", "쇼핑", "생필품", "기타"]
-    };
-
     const categoryEmojis = {
         "정기구독": "🍿", "집": "🏠", "통신비": "📱", "보험료": "🏥", "자동차": "🚗", "적금": "🐷",
         "교통비": "🚌", "카드": "💳", "식비": "🍔", "쇼핑": "🛍️", "생필품": "🧻", "기타": "📦"
     };
-    
     const keyMapping = {
         "정기구독": "sub", "집": "house", "통신비": "phone", "보험료": "ins", "자동차": "car", "적금": "save",
         "교통비": "traffic", "카드": "card", "식비": "food", "쇼핑": "shop", "생필품": "item", "기타": "etc"
@@ -425,10 +400,10 @@
     currentYearMonth = `${initDate.getFullYear()}-${String(initDate.getMonth() + 1).padStart(2, '0')}`;
     
     initPage();
+
     function initPage() {
         document.getElementById('expenseDate').value = new Date().toISOString().substring(0, 10);
         setupCategorySelects();
-        buildBudgetBlocksUI(); 
         fetchAllDataFromGoogle();
     }
 
@@ -436,18 +411,16 @@
         document.getElementById('syncStatus').innerText = msg;
     }
 
-    // 🆕 [동기화 핵심개선] 구글 데이터 요청 시 브라우저가 옛날 캐시를 재활용하지 못하도록 강제 무력화 파라미터 적용
+    // 구글 스프레드시트 전체 데이터 조회 (GET) - 모바일 규격 캐시 우회 수정완료
     function fetchAllDataFromGoogle() {
-        if(GOOGLE_SCRIPT_URL.includes("여기에_구글")) {
+        if(GOOGLE_SCRIPT_URL.includes("YOUR_NEW_WEB_APP") || GOOGLE_SCRIPT_URL.includes("여기에_구글")) {
             setStatus("❌ 구글 스크립트 URL을 연동해주세요.");
             return;
         }
         setStatus("🔄 구글 시트 동기화 중...");
         
-        // 주소 뒤에 매 밀리초 단위의 타임스탬프를 난수로 붙여 모바일 브라우저의 캐싱 본능을 완전 차단합니다.
-        const forcedUrl = GOOGLE_SCRIPT_URL + (GOOGLE_SCRIPT_URL.includes("?") ? "&" : "?") + "_nocache=" + new Date().getTime();
-        
-        fetch(forcedUrl, { method: "GET", cache: "no-store", headers: { "Cache-Control": "no-cache", "Pragma": "no-cache" } })
+        // 캐시 왜곡 오류를 우회하기 위해 정식 파라미터 구조 형식으로 호출합니다.
+        fetch(GOOGLE_SCRIPT_URL)
             .then(res => res.json())
             .then(data => {
                 accountData = data;
@@ -460,14 +433,16 @@
             });
     }
 
+    // 구글 스프레드시트에 저장 (POST)
     function saveCurrentMonthToGoogle() {
-        if(GOOGLE_SCRIPT_URL.includes("여기에_구글")) return;
+        if(GOOGLE_SCRIPT_URL.includes("YOUR_NEW_WEB_APP") || GOOGLE_SCRIPT_URL.includes("여기에_구글")) return;
         setStatus("📤 구글 시트에 실시간 반영 중...");
         
         const payload = {
             ym: currentYearMonth,
             data: accountData[currentYearMonth]
         };
+
         fetch(GOOGLE_SCRIPT_URL, {
             method: "POST",
             headers: { "Content-Type": "text/plain" }, 
@@ -475,8 +450,6 @@
         })
         .then(res => {
             setStatus("✅ 클라우드 저장 완료");
-            // 🆕 저장 직후 PC-모바일 간 싱크 차단 오류를 막기 위해 구글 클라우드 데이터를 즉시 1회 재동기화 강제 집행
-            setTimeout(fetchAllDataFromGoogle, 300);
         })
         .catch(err => {
             console.error(err);
@@ -487,81 +460,29 @@
     function setupCategorySelects() {
         const selectAccount = document.getElementById('categorySelect');
         const selectSalary = document.getElementById('splitCategory');
-        const filterSelect = document.getElementById('historyFilterSelect');
-        
         selectAccount.innerHTML = ''; selectSalary.innerHTML = '';
-        filterSelect.innerHTML = '<option value="ALL">🔍 전체보기</option>';
-        
         Object.keys(categoryEmojis).forEach(cat => {
             const optText = `${categoryEmojis[cat]} ${cat}`;
-            
             const opt1 = document.createElement('option'); opt1.value = cat; opt1.innerText = optText; selectAccount.appendChild(opt1);
             const opt2 = document.createElement('option'); opt2.value = cat; opt2.innerText = optText; selectSalary.appendChild(opt2);
-            const opt3 = document.createElement('option'); opt3.value = cat; opt3.innerText = optText; filterSelect.appendChild(opt3);
         });
-    }
-
-    function buildBudgetBlocksUI() {
-        const fixedContainer = document.getElementById('fixedBudgetContainer');
-        const variableContainer = document.getElementById('variableBudgetContainer');
-        fixedContainer.innerHTML = ''; variableContainer.innerHTML = '';
-
-        categoryGroups.fixed.forEach(cat => { fixedContainer.appendChild(createItemBlockHTML(cat)); });
-        categoryGroups.variable.forEach(cat => { variableContainer.appendChild(createItemBlockHTML(cat)); });
-    }
-
-    function createItemBlockHTML(cat) {
-        const key = keyMapping[cat];
-        const block = document.createElement('div');
-        block.className = 'budget-input-item';
-        
-        let rowsHTML = '';
-        for(let i = 1; i <= 4; i++) {
-            if(i === 1) {
-                rowsHTML += `
-                <div class="budget-row-line">
-                    <input type="text" class="row-memo" value="이체 자동반영" readonly />
-                    <input type="text" id="row_amt_${key}_1" class="row-amount" value="0" readonly />
-                </div>`;
-            } else {
-                rowsHTML += `
-                <div class="budget-row-line">
-                    <input type="text" id="row_memo_${key}_${i}" class="row-memo" placeholder="메모" onchange="handleDetailRowChange('${key}')" />
-                    <input type="text" id="row_amt_${key}_${i}" class="row-amount" placeholder="0" oninput="formatAmountInput(this)" onchange="handleDetailRowChange('${key}')" />
-                </div>`;
-            }
-        }
-
-        block.innerHTML = `
-            <div class="budget-item-header">
-                <span>${categoryEmojis[cat]} ${cat}</span>
-                <span class="subtotal-span">
-                    <span id="subtotal_${key}" class="b-val">0</span> / <span id="actual_${key}" class="e-val">0</span>
-                </span>
-            </div>
-            <div class="budget-rows-container">
-                ${rowsHTML}
-            </div>
-        `;
-        return block;
     }
 
     function loadMonthData() {
         const [year, month] = currentYearMonth.split('-');
         document.getElementById('currentMonthDisplay').innerText = `${year}년 ${month}월`;
+        document.getElementById('historyTitle').innerText = `${month}월 지출 내역`;
 
         if (!accountData[currentYearMonth]) {
-            accountData[currentYearMonth] = { income: 0, budgets: { ...defaultBudgets }, detailBudgets: {}, expenses: [], splits: [] };
+            accountData[currentYearMonth] = { income: 0, budgets: { ...defaultBudgets }, expenses: [], splits: [] };
         }
 
         const mData = accountData[currentYearMonth];
         if (!mData.budgets) mData.budgets = { ...defaultBudgets };
-        if (!mData.detailBudgets) mData.detailBudgets = {};
         if (!mData.expenses) mData.expenses = [];
         if (!mData.splits) mData.splits = [];
 
         document.getElementById('incomeInput').value = mData.income > 0 ? numToCommaStr(mData.income) : '';
-        document.getElementById('historyFilterSelect').value = "ALL";
         
         cancelAccountEdit();
         cancelSalaryEdit();
@@ -572,127 +493,63 @@
 
     function renderBudgetFields() {
         const mData = accountData[currentYearMonth];
-        if(!mData) return;
-        
-        const splits = mData.splits || [];
-        const details = mData.detailBudgets || {};
-        const expenses = mData.expenses || [];
+        const b = mData.budgets;
+        const splits = mData.splits;
 
         let splitSums = { sub:0, house:0, phone:0, ins:0, car:0, save:0, traffic:0, card:0, food:0, shop:0, item:0, etc:0 };
         splits.forEach(item => {
             const key = keyMapping[item.category];
             if (key) splitSums[key] += item.amount;
         });
-
-        let actualExpenseSums = { sub:0, house:0, phone:0, ins:0, car:0, save:0, traffic:0, card:0, food:0, shop:0, item:0, etc:0 };
-        expenses.forEach(item => {
-            const key = keyMapping[item.category];
-            if (key) actualExpenseSums[key] += item.amount;
-        });
-
         Object.keys(keyMapping).forEach(catName => {
             const key = keyMapping[catName];
-            
-            const firstRowAmtEl = document.getElementById(`row_amt_${key}_1`);
-            if(firstRowAmtEl) firstRowAmtEl.value = numToCommaStr(splitSums[key]);
-
-            let manualSum = 0;
-            const catDetails = details[key] || [];
-            
-            for(let i = 2; i <= 4; i++) {
-                const memoEl = document.getElementById(`row_memo_${key}_${i}`);
-                const amtEl = document.getElementById(`row_amt_${key}_${i}`);
-                
-                const savedRow = catDetails.find(d => d.rowIdx === i);
-                if(savedRow) {
-                    if(memoEl) memoEl.value = savedRow.memo || '';
-                    if(amtEl) {
-                        amtEl.value = savedRow.amount > 0 ? numToCommaStr(savedRow.amount) : '';
-                        manualSum += savedRow.amount;
-                    }
-                } else {
-                    if(memoEl) memoEl.value = '';
-                    if(amtEl) amtEl.value = '';
-                }
-            }
-
-            const totalSubtotal = splitSums[key] + manualSum;
-            
-            const subtotalEl = document.getElementById(`subtotal_${key}`);
-            if(subtotalEl) subtotalEl.innerText = numToCommaStr(totalSubtotal);
-            
-            const actualEl = document.getElementById(`actual_${key}`);
-            if(actualEl) actualEl.innerText = numToCommaStr(actualExpenseSums[key]);
-            
-            mData.budgets[key] = totalSubtotal;
+            const el = document.getElementById(`b_${key}`);
+            el.value = numToCommaStr((b[key] || 0) + splitSums[key]);
         });
-
         calculateTotalBudgetSum();
     }
 
-    function handleDetailRowChange(key) {
+    function handleBudgetChange() {
         const mData = accountData[currentYearMonth];
-        if(!mData.detailBudgets) mData.detailBudgets = {};
-        
-        mData.detailBudgets[key] = [];
-        let manualSum = 0;
+        const splits = mData.splits;
 
-        for(let i = 2; i <= 4; i++) {
-            const memoVal = document.getElementById(`row_memo_${key}_${i}`).value.trim();
-            const amtVal = commaStrToNum(document.getElementById(`row_amt_${key}_${i}`).value);
-            
-            mData.detailBudgets[key].push({
-                rowIdx: i,
-                memo: memoVal,
-                amount: amtVal
-            });
-            manualSum += amtVal;
-        }
-
-        const firstRowAmt = commaStrToNum(document.getElementById(`row_amt_${key}_1`).value);
-        const totalSubtotal = firstRowAmt + manualSum;
-        
-        const subtotalEl = document.getElementById(`subtotal_${key}`);
-        if(subtotalEl) subtotalEl.innerText = numToCommaStr(totalSubtotal);
-        mData.budgets[key] = totalSubtotal;
-
+        let splitSums = { sub:0, house:0, phone:0, ins:0, car:0, save:0, traffic:0, card:0, food:0, shop:0, item:0, etc:0 };
+        splits.forEach(item => {
+            const key = keyMapping[item.category];
+            if (key) splitSums[key] += item.amount;
+        });
+        Object.keys(keyMapping).forEach(catName => {
+            const key = keyMapping[catName];
+            const el = document.getElementById(`b_${key}`);
+            formatAmountInput(el);
+            let pureManualVal = commaStrToNum(el.value) - splitSums[key];
+            mData.budgets[key] = pureManualVal < 0 ? 0 : pureManualVal;
+        });
         calculateTotalBudgetSum();
         saveCurrentMonthToGoogle();
     }
 
     function calculateTotalBudgetSum() {
         const mData = accountData[currentYearMonth];
-        let totalBudgetSum = 0;
-        Object.keys(keyMapping).forEach(catName => { 
-            totalBudgetSum += (mData.budgets[keyMapping[catName]] || 0); 
-        });
-        
-        document.getElementById('totalBudgetDisplayInput').value = numToCommaStr(totalBudgetSum);
+        let totalManual = 0;
+        Object.keys(keyMapping).forEach(catName => { totalManual += (mData.budgets[keyMapping[catName]] || 0); });
+        let totalSplits = mData.splits.reduce((sum, item) => sum + item.amount, 0);
+        document.getElementById('totalBudgetDisplayInput').value = numToCommaStr(totalManual + totalSplits);
         updateDashboard();
     }
 
     function updateDashboard() {
         const mData = accountData[currentYearMonth];
         const income = mData.income || 0;
-        let budget = 0;
-        Object.keys(keyMapping).forEach(catName => { budget += (mData.budgets[keyMapping[catName]] || 0); });
-        const totalExpense = mData.expenses ? mData.expenses.reduce((sum, item) => sum + item.amount, 0) : 0;
+        let totalManual = 0;
+        Object.keys(keyMapping).forEach(catName => { totalManual += (mData.budgets[keyMapping[catName]] || 0); });
+        let totalSplits = mData.splits.reduce((sum, item) => sum + item.amount, 0);
+        const budget = totalManual + totalSplits;
+        const totalExpense = mData.expenses.reduce((sum, item) => sum + item.amount, 0);
 
         document.getElementById('budgetRatio').innerText = `${income > 0 ? Math.round((budget / income) * 100) : 0}%`;
-        
-        const incomeMinusBudget = income - budget;
-        const incomeMinusBudgetEl = document.getElementById('displayIncomeMinusBudget');
-        if(incomeMinusBudget >= 0) {
-            incomeMinusBudgetEl.innerText = numToCommaStr(incomeMinusBudget) + '원';
-            incomeMinusBudgetEl.style.color = "#2563eb";
-        } else {
-            incomeMinusBudgetEl.innerText = '예산 초과 ' + numToCommaStr(Math.abs(incomeMinusBudget)) + '원';
-            incomeMinusBudgetEl.style.color = "var(--danger-color)";
-        }
-
         document.getElementById('displayBudget').innerText = numToCommaStr(budget) + '원';
         document.getElementById('displayExpense').innerText = numToCommaStr(totalExpense) + '원';
-        
         const remain = budget - totalExpense;
         const progressPercent = budget > 0 ? (totalExpense / budget) * 100 : 0;
         const progressBar = document.getElementById('budgetProgress');
@@ -700,7 +557,6 @@
         
         if (progressPercent > 100) progressBar.classList.add('warning');
         else progressBar.classList.remove('warning');
-        
         const remainLabel = document.getElementById('remainLabel');
         const displayRemain = document.getElementById('displayRemain');
 
@@ -734,7 +590,6 @@
         }
 
         renderList();
-        renderBudgetFields(); 
         updateDashboard();
         saveCurrentMonthToGoogle();
         document.getElementById('memoInput').value = ""; amountEl.value = "";
@@ -745,7 +600,6 @@
         accountData[currentYearMonth].expenses = accountData[currentYearMonth].expenses.filter(e => e.id !== id);
         if (editingAccountId === id) cancelAccountEdit();
         renderList();
-        renderBudgetFields(); 
         updateDashboard();
         saveCurrentMonthToGoogle();
     }
@@ -769,7 +623,7 @@
         }
 
         renderSplitList();
-        renderBudgetFields(); 
+        renderBudgetFields();
         saveCurrentMonthToGoogle();
         document.getElementById('splitMemo').value = ""; amountEl.value = "";
     }
@@ -779,39 +633,32 @@
         accountData[currentYearMonth].splits = accountData[currentYearMonth].splits.filter(s => s.id !== id);
         if (editingSalaryId === id) cancelSalaryEdit();
         renderSplitList();
-        renderBudgetFields(); 
+        renderBudgetFields();
         saveCurrentMonthToGoogle();
     }
 
     function insertAllBudgetedCosts() {
         const mData = accountData[currentYearMonth];
+        let splitSums = { sub:0, house:0, phone:0, ins:0, car:0, save:0, traffic:0, card:0, food:0, shop:0, item:0, etc:0 };
+        mData.splits.forEach(item => { splitSums[keyMapping[item.category]] += item.amount; });
+
         let addedCount = 0;
         const todayStr = new Date().toISOString().substring(0, 10);
-
         Object.keys(keyMapping).forEach(catName => {
             const key = keyMapping[catName];
-            const totalBudgetAmount = mData.budgets[key] || 0;
+            const totalBudgetAmount = (mData.budgets[key] || 0) + splitSums[key];
 
             if (totalBudgetAmount > 0) {
                 if (!mData.expenses.some(e => e.category === catName && e.memo === `[예산] ${catName}`)) {
                     mData.expenses.push({ 
-                        id: Date.now() + addedCount, 
-                        date: todayStr, 
-                        category: catName, 
-                        memo: `[예산] ${catName}`, 
-                        amount: totalBudgetAmount 
-                    });
+                        id: Date.now() + addedCount, date: todayStr, category: catName, memo: `[예산] ${catName}`, amount: totalBudgetAmount });
                     addedCount++;
                 }
             }
         });
-
         if (addedCount > 0) {
             alert(`${addedCount}개의 예산 항목이 지출 내역에 등록되었습니다.`);
-            renderList(); 
-            renderBudgetFields();
-            updateDashboard(); 
-            saveCurrentMonthToGoogle();
+            renderList(); updateDashboard(); saveCurrentMonthToGoogle();
         } else {
             alert("이미 모두 등록되었거나 등록할 예산 금액이 없습니다.");
         }
@@ -819,23 +666,9 @@
 
     function renderList() {
         const listEl = document.getElementById('historyList');
-        const filterValue = document.getElementById('historyFilterSelect').value;
-        const [year, month] = currentYearMonth.split('-');
-        
         listEl.innerHTML = "";
-        let list = accountData[currentYearMonth].expenses || [];
-        
-        if (filterValue !== "ALL") {
-            list = list.filter(item => item.category === filterValue);
-        }
-
-        const filterTotal = list.reduce((sum, item) => sum + item.amount, 0);
-        document.getElementById('historyTitle').innerText = `${month}월 지출 (${numToCommaStr(filterTotal)}원)`;
-
-        if (list.length === 0) { 
-            listEl.innerHTML = `<li class="empty-msg">선택한 조건의 지출 내역이 없습니다.</li>`; 
-            return; 
-        }
+        const list = accountData[currentYearMonth].expenses || [];
+        if (list.length === 0) { listEl.innerHTML = `<li class="empty-msg">이번 달 지출 내역이 없습니다.</li>`; return; }
 
         [...list].sort((a, b) => new Date(b.date) - new Date(a.date) || b.id - a.id).forEach(item => {
             const li = document.createElement('li'); li.className = "history-item";
@@ -908,20 +741,6 @@
         saveCurrentMonthToGoogle();
     }
 
-    function switchTab(tabName) {
-        document.getElementById('tabBtnAccount').classList.remove('active');
-        document.getElementById('tabBtnSalary').classList.remove('active');
-        document.getElementById('tabContentAccount').classList.remove('active');
-        document.getElementById('tabContentSalary').classList.remove('active');
-        if (tabName === 'account') {
-            document.getElementById('tabBtnAccount').classList.add('active'); 
-            document.getElementById('tabContentAccount').classList.add('active');
-        } else {
-            document.getElementById('tabBtnSalary').classList.add('active'); 
-            document.getElementById('tabContentSalary').classList.add('active');
-        }
-    }
-
     function editExpense(id) {
         const item = accountData[currentYearMonth].expenses.find(e => e.id === id);
         if (!item) return;
@@ -967,8 +786,20 @@
         document.getElementById('splitMemo').value = ""; document.getElementById('splitAmount').value = "";
     }
 
-    function numToCommaStr(num) { if (isNaN(num) || num === null || num === undefined) return "0"; return num.toLocaleString(); }
-    function commaStrToNum(str) { if (!str) return 0; return parseInt(str.toString().replace(/,/g, '')) || 0; }
+    function switchTab(tabName) {
+        document.getElementById('tabBtnAccount').classList.remove('active');
+        document.getElementById('tabBtnSalary').classList.remove('active');
+        document.getElementById('tabContentAccount').classList.remove('active');
+        document.getElementById('tabContentSalary').classList.remove('active');
+        if (tabName === 'account') {
+            document.getElementById('tabBtnAccount').classList.add('active'); document.getElementById('tabContentAccount').classList.add('active');
+        } else {
+            document.getElementById('tabBtnSalary').classList.add('active'); document.getElementById('tabContentSalary').classList.add('active');
+        }
+    }
+
+    function numToCommaStr(num) { if (isNaN(num)) return "0"; return num.toLocaleString(); }
+    function commaStrToNum(str) { if (!str) return 0; return parseInt(str.replace(/,/g, '')) || 0; }
     function formatAmountInput(inputEl) {
         let num = commaStrToNum(inputEl.value);
         inputEl.value = num === 0 ? (inputEl.value === "" ? "" : "0") : numToCommaStr(num);
