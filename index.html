@@ -271,6 +271,16 @@
                 </div>
             </div>
         </div>
+        <div class="card">
+            <div class="card-title">총 자산 현황</div>
+            <div class="income-budget-grid">
+                <div class="input-box"><label>집 보증금</label><input type="text" id="assetDeposit" onchange="saveAssets()"></div>
+                <div class="input-box"><label>청년미래적금</label><input type="text" id="assetYouth" onchange="saveAssets()"></div>
+                <div class="input-box"><label>자유적금</label><input type="text" id="assetFree" onchange="saveAssets()"></div>
+                <div class="input-box"><label>파킹통장</label><input type="text" id="assetParking" onchange="saveAssets()"></div>
+            </div>
+            <div class="status-summary"><div class="status-row"><span>총 자산</span><span class="val" id="assetTotal">0원</span></div></div>
+        </div>
 
         <div class="card">
             <div class="card-title">항목별 예산 계획 및 상세 내역</div>
@@ -328,11 +338,15 @@
         <div class="card">
             <div class="card-title" style="color: var(--point-blue);">💰 통장별 이체 금액 계산기</div>
             <div class="bank-summary-grid">
-                <div class="bank-summary-card"><div class="bank-name-lbl">KB GS Pay</div><div class="bank-total-val" id="sum_kb_gs">0</div></div>
-                <div class="bank-summary-card"><div class="bank-name-lbl">KB 통장</div><div class="bank-total-val" id="sum_kb">0</div></div>
+                <div class="bank-summary-card"><div class="bank-name-lbl">KB</div><div class="bank-total-val" id="sum_kb">0</div></div>
                 <div class="bank-summary-card"><div class="bank-name-lbl">카카오뱅크</div><div class="bank-total-val" id="sum_kaba">0</div></div>
                 <div class="bank-summary-card"><div class="bank-name-lbl">농협</div><div class="bank-total-val" id="sum_nh">0</div></div>
                 <div class="bank-summary-card"><div class="bank-name-lbl">하나</div><div class="bank-total-val" id="sum_hana">0</div></div>
+                <div class="bank-summary-card"><div class="bank-name-lbl">인배 용돈</div><div class="bank-total-val" id="sum_inbae">0</div></div>
+                <div class="bank-summary-card"><div class="bank-name-lbl">하나 용돈</div><div class="bank-total-val" id="sum_hanapocket">0</div></div>
+                <div class="bank-summary-card"><div class="bank-name-lbl">미래에셋 CMA</div><div class="bank-total-val" id="sum_mirae">0</div></div>
+                <div class="bank-summary-card"><div class="bank-name-lbl">청년미래적금</div><div class="bank-total-val" id="sum_youth">0</div></div>
+                <div class="bank-summary-card"><div class="bank-name-lbl">생활비</div><div class="bank-total-val" id="sum_life">0</div></div>
             </div>
 
             <div id="editBannerSalary" class="edit-banner">
@@ -352,11 +366,15 @@
                 <div class="form-group">
                     <label for="splitBank">통장</label>
                     <select id="splitBank" class="form-control">
-                        <option value="KB GS Pay">KB GS Pay</option>
                         <option value="KB">KB</option>
                         <option value="카뱅">카뱅</option>
                         <option value="농협">농협</option>
                         <option value="하나">하나</option>
+                        <option value="인배 용돈">인배 용돈</option>
+                        <option value="하나 용돈">하나 용돈</option>
+                        <option value="미래에셋 CMA">미래에셋 CMA</option>
+                        <option value="청년미래적금">청년미래적금</option>
+                        <option value="생활비">생활비</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -521,7 +539,7 @@
         document.getElementById('currentMonthDisplay').innerText = `${year}년 ${month}월`;
 
         if (!accountData[currentYearMonth]) {
-            accountData[currentYearMonth] = { income: 0, budgets: { ...defaultBudgets }, detailBudgets: {}, expenses: [], splits: [] };
+            accountData[currentYearMonth] = { income: 0, budgets: { ...defaultBudgets }, detailBudgets: {}, expenses: [], splits: [], assets:{deposit:0,youthSaving:0,freeSaving:0,parking:0} };
         }
 
         const mData = accountData[currentYearMonth];
@@ -537,6 +555,7 @@
         renderBudgetFields();
         renderList();
         renderSplitList();
+        renderAssets();
     }
 
     function renderBudgetFields() {
@@ -798,7 +817,7 @@
         const listEl = document.getElementById('splitList');
         listEl.innerHTML = "";
         const list = accountData[currentYearMonth].splits || [];
-        let bankSums = { "KB GS Pay": 0, "KB": 0, "카뱅": 0, "농협": 0, "하나": 0 };
+        let bankSums = { "KB":0,"카뱅":0,"농협":0,"하나":0,"인배 용돈":0,"하나 용돈":0,"미래에셋 CMA":0,"청년미래적금":0,"생활비":0 };
         if (list.length === 0) { listEl.innerHTML = `<li class="empty-msg">등록된 분할 이체 항목이 없습니다.</li>`; updateBankSummaryDisplays(bankSums); return; }
 
         list.forEach(item => {
@@ -823,8 +842,12 @@
     }
 
     function updateBankSummaryDisplays(sums) {
-        document.getElementById('sum_kb_gs').innerText = numToCommaStr(sums["KB GS Pay"]);
         document.getElementById('sum_kb').innerText = numToCommaStr(sums["KB"]);
+        document.getElementById('sum_inbae').innerText = numToCommaStr(sums["인배 용돈"]);
+        document.getElementById('sum_hanapocket').innerText = numToCommaStr(sums["하나 용돈"]);
+        document.getElementById('sum_mirae').innerText = numToCommaStr(sums["미래에셋 CMA"]);
+        document.getElementById('sum_youth').innerText = numToCommaStr(sums["청년미래적금"]);
+        document.getElementById('sum_life').innerText = numToCommaStr(sums["생활비"]);
         document.getElementById('sum_kaba').innerText = numToCommaStr(sums["카뱅"]);
         document.getElementById('sum_nh').innerText = numToCommaStr(sums["농협"]);
         document.getElementById('sum_hana').innerText = numToCommaStr(sums["하나"]);
@@ -910,6 +933,27 @@
         let num = commaStrToNum(inputEl.value);
         inputEl.value = num === 0 ? (inputEl.value === "" ? "" : "0") : numToCommaStr(num);
     }
+
+    function saveAssets(){
+        const mData=accountData[currentYearMonth];
+        if(!mData.assets) mData.assets={deposit:0,youthSaving:0,freeSaving:0,parking:0};
+        const ids=['assetDeposit','assetYouth','assetFree','assetParking'];
+        ids.forEach(id=>formatAmountInput(document.getElementById(id)));
+        mData.assets.deposit=commaStrToNum(document.getElementById('assetDeposit').value);
+        mData.assets.youthSaving=commaStrToNum(document.getElementById('assetYouth').value);
+        mData.assets.freeSaving=commaStrToNum(document.getElementById('assetFree').value);
+        mData.assets.parking=commaStrToNum(document.getElementById('assetParking').value);
+        renderAssets();
+        saveCurrentMonthToGoogle();
+    }
+    function renderAssets(){
+        const a=(accountData[currentYearMonth].assets)||{deposit:0,youthSaving:0,freeSaving:0,parking:0};
+        const set=(id,v)=>{const e=document.getElementById(id); if(e)e.value=v?numToCommaStr(v):'';}
+        set('assetDeposit',a.deposit); set('assetYouth',a.youthSaving); set('assetFree',a.freeSaving); set('assetParking',a.parking);
+        const total=a.deposit+a.youthSaving+a.freeSaving+a.parking;
+        const t=document.getElementById('assetTotal'); if(t)t.innerText=numToCommaStr(total)+'원';
+    }
+
 </script>
 </body>
 </html>
