@@ -404,23 +404,20 @@
     let editingSalaryId = null;
 
     const categoryGroups = {
-    fixed: ["정기구독", "집", "통신비", "보험료", "자동차", "적금"],
-    variable: ["인배 용돈", "하나 용돈", "생활비", "식비", "모임"]
+        fixed: ["정기구독", "집", "통신비", "보험료", "자동차", "적금"],
+        variable: ["교통비", "카드", "식비", "쇼핑", "생필품", "기타"]
     };
 
     const categoryEmojis = {
-    "정기구독": "🍿", "집": "🏠", "통신비": "📱", "보험료": "🏥", "자동차": "🚗", "적금": "🐷",
-    "인배 용돈": "👤", "하나 용돈": "👤", "생활비": "💸", "식비": "🍔", "모임": "👥"
-};
-
+        "정기구독": "🍿", "집": "🏠", "통신비": "📱", "보험료": "🏥", "자동차": "🚗", "적금": "🐷",
+        "교통비": "🚌", "카드": "💳", "식비": "🍔", "쇼핑": "🛍️", "생필품": "🧻", "기타": "📦"
+    };
+    
     const keyMapping = {
-    "정기구독": "sub", "집": "house", "통신비": "phone", "보험료": "ins", "자동차": "car", "적금": "save",
-    "인배 용돈": "inbae", "하나 용돈": "hana", "생활비": "living", "식비": "food", "모임": "meet"
-};
-    const defaultBudgets = { 
-    sub: 0, house: 0, phone: 0, ins: 0, car: 0, save: 0, 
-    inbae: 0, hana: 0, living: 0, food: 0, meet: 0 
-};
+        "정기구독": "sub", "집": "house", "통신비": "phone", "보험료": "ins", "자동차": "car", "적금": "save",
+        "교통비": "traffic", "카드": "card", "식비": "food", "쇼핑": "shop", "생필품": "item", "기타": "etc"
+    };
+    const defaultBudgets = { sub: 0, house: 0, phone: 0, ins: 0, car: 0, save: 0, traffic: 0, card: 0, food: 0, shop: 0, item: 0, etc: 0 };
     const initDate = new Date();
     currentYearMonth = `${initDate.getFullYear()}-${String(initDate.getMonth() + 1).padStart(2, '0')}`;
     
@@ -561,26 +558,25 @@
         renderAssets();
     }
 
-function renderBudgetFields() {
+    function renderBudgetFields() {
         const mData = accountData[currentYearMonth];
         if(!mData) return;
         const splits = mData.splits || [];
-        
-        let splitSums = { sub:0, house:0, phone:0, ins:0, car:0, save:0, inbae:0, hana:0, living:0, food:0, meet:0 };
-        
+        const details = mData.detailBudgets || {};
+        const expenses = mData.expenses || [];
+        let splitSums = { sub:0, house:0, phone:0, ins:0, car:0, save:0, traffic:0, card:0, food:0, shop:0, item:0, etc:0 };
         splits.forEach(item => {
             const key = keyMapping[item.category];
-            if (key && splitSums.hasOwnProperty(key)) {
-                splitSums[key] += item.amount;
-            }
+            if (key) splitSums[key] += item.amount;
         });
         let actualExpenseSums = { sub:0, house:0, phone:0, ins:0, car:0, save:0, traffic:0, card:0, food:0, shop:0, item:0, etc:0 };
         expenses.forEach(item => {
             const key = keyMapping[item.category];
             if (key) actualExpenseSums[key] += item.amount;
         });
-Object.keys(keyMapping).forEach(catName => {
+        Object.keys(keyMapping).forEach(catName => {
             const key = keyMapping[catName];
+            
             const firstRowAmtEl = document.getElementById(`row_amt_${key}_1`);
             if(firstRowAmtEl) firstRowAmtEl.value = numToCommaStr(splitSums[key]);
 
@@ -726,17 +722,15 @@ Object.keys(keyMapping).forEach(catName => {
         saveCurrentMonthToGoogle();
     }
 
-function addOrUpdateSplitItem() {
+    function addOrUpdateSplitItem() {
         const category = document.getElementById('splitCategory').value;
         const memo = document.getElementById('splitMemo').value.trim();
         const bank = document.getElementById('splitBank').value;
         const amountEl = document.getElementById('splitAmount');
         const amount = commaStrToNum(amountEl.value);
-
         if (amount <= 0) { alert("올바른 금액을 입력해 주세요."); return; }
         
         const mData = accountData[currentYearMonth];
-        
         if (editingSalaryId !== null) {
             const idx = mData.splits.findIndex(s => s.id === editingSalaryId);
             if (idx !== -1) { mData.splits[idx] = { id: editingSalaryId, category, memo: memo || `${category} 이체`, bank, amount }; }
@@ -744,15 +738,6 @@ function addOrUpdateSplitItem() {
         } else {
             mData.splits.push({ id: Date.now(), category, memo: memo || `${category} 이체`, bank, amount });
         }
-
-        renderSplitList();
-        renderBudgetFields();
-        calculateTotalBudgetSum();
-        updateDashboard();
-        saveCurrentMonthToGoogle();
-        
-        document.getElementById('splitMemo').value = ""; 
-        amountEl.value = "";
 
         renderSplitList();
         renderBudgetFields(); 
