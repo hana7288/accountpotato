@@ -411,13 +411,16 @@
     const categoryEmojis = {
     "정기구독": "🍿", "집": "🏠", "통신비": "📱", "보험료": "🏥", "자동차": "🚗", "적금": "🐷",
     "인배 용돈": "👤", "하나 용돈": "👤", "생활비": "💸", "식비": "🍔", "모임": "👥"
-    };
+};
 
     const keyMapping = {
     "정기구독": "sub", "집": "house", "통신비": "phone", "보험료": "ins", "자동차": "car", "적금": "save",
     "인배 용돈": "inbae", "하나 용돈": "hana", "생활비": "living", "식비": "food", "모임": "meet"
-    };
-    const defaultBudgets = { sub: 0, house: 0, phone: 0, ins: 0, car: 0, save: 0, traffic: 0, card: 0, food: 0, shop: 0, item: 0, etc: 0 };
+};
+    const defaultBudgets = { 
+    sub: 0, house: 0, phone: 0, ins: 0, car: 0, save: 0, 
+    inbae: 0, hana: 0, living: 0, food: 0, meet: 0 
+};
     const initDate = new Date();
     currentYearMonth = `${initDate.getFullYear()}-${String(initDate.getMonth() + 1).padStart(2, '0')}`;
     
