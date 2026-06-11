@@ -561,25 +561,26 @@
         renderAssets();
     }
 
-    function renderBudgetFields() {
+function renderBudgetFields() {
         const mData = accountData[currentYearMonth];
         if(!mData) return;
         const splits = mData.splits || [];
-        const details = mData.detailBudgets || {};
-        const expenses = mData.expenses || [];
-        let splitSums = { sub:0, house:0, phone:0, ins:0, car:0, save:0, traffic:0, card:0, food:0, shop:0, item:0, etc:0 };
+        
+        let splitSums = { sub:0, house:0, phone:0, ins:0, car:0, save:0, inbae:0, hana:0, living:0, food:0, meet:0 };
+        
         splits.forEach(item => {
             const key = keyMapping[item.category];
-            if (key) splitSums[key] += item.amount;
+            if (key && splitSums.hasOwnProperty(key)) {
+                splitSums[key] += item.amount;
+            }
         });
         let actualExpenseSums = { sub:0, house:0, phone:0, ins:0, car:0, save:0, traffic:0, card:0, food:0, shop:0, item:0, etc:0 };
         expenses.forEach(item => {
             const key = keyMapping[item.category];
             if (key) actualExpenseSums[key] += item.amount;
         });
-        Object.keys(keyMapping).forEach(catName => {
+Object.keys(keyMapping).forEach(catName => {
             const key = keyMapping[catName];
-            
             const firstRowAmtEl = document.getElementById(`row_amt_${key}_1`);
             if(firstRowAmtEl) firstRowAmtEl.value = numToCommaStr(splitSums[key]);
 
@@ -725,15 +726,17 @@
         saveCurrentMonthToGoogle();
     }
 
-    function addOrUpdateSplitItem() {
+function addOrUpdateSplitItem() {
         const category = document.getElementById('splitCategory').value;
         const memo = document.getElementById('splitMemo').value.trim();
         const bank = document.getElementById('splitBank').value;
         const amountEl = document.getElementById('splitAmount');
         const amount = commaStrToNum(amountEl.value);
+
         if (amount <= 0) { alert("올바른 금액을 입력해 주세요."); return; }
         
         const mData = accountData[currentYearMonth];
+        
         if (editingSalaryId !== null) {
             const idx = mData.splits.findIndex(s => s.id === editingSalaryId);
             if (idx !== -1) { mData.splits[idx] = { id: editingSalaryId, category, memo: memo || `${category} 이체`, bank, amount }; }
@@ -741,6 +744,15 @@
         } else {
             mData.splits.push({ id: Date.now(), category, memo: memo || `${category} 이체`, bank, amount });
         }
+
+        renderSplitList();
+        renderBudgetFields();
+        calculateTotalBudgetSum();
+        updateDashboard();
+        saveCurrentMonthToGoogle();
+        
+        document.getElementById('splitMemo').value = ""; 
+        amountEl.value = "";
 
         renderSplitList();
         renderBudgetFields(); 
